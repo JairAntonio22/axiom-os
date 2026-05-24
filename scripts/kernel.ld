@@ -12,5 +12,10 @@ SECTIONS {
   }
   .bss : {
     *(.bss*)
+    . = ALIGN(16);
+
+    memory_begin = .;
+    . = 4K;
+    memory_end = .;
   }
 }

@@ -1,0 +1,26 @@
+[
+  {
+    "file": "src/build.c",
+    "arguments": [
+      "/opt/homebrew/bin/riscv64-elf-gcc",
+      "-c",
+      "-O0",
+      "-march=rv64i",
+      "-mabi=lp64",
+      "-mcmodel=medany",
+      "-Isrc",
+      "-std=c99",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-fno-stack-protector",
+      "-fno-pic",
+      "-ffreestanding",
+      "-o",
+      ".build/kernel.o",
+      "src/build.c"
+    ],
+    "directory": "/Users/jair.antonio22/dev/axiom-os",
+    "output": ".build/kernel.o"
+  }
+]

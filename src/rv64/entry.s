@@ -4,7 +4,7 @@
 _start:
 	add s0, sp, zero
 	la sp, __stack_top
-	jal zero, kernel_main
+	jal zero, kmain
 
 loop:
 	j loop

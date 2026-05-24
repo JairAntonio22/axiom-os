@@ -1,3 +1,5 @@
+.SILENT:
+
 .PHONY: all run clean
 
 all: bin/kernel
@@ -11,17 +13,24 @@ clean:
 	rm -fr bin/*
 	rm -fr .build/*
 
+TC_PREFIX=riscv64-elf-
+
+AS=$(TC_PREFIX)as
+CC=$(TC_PREFIX)gcc
+LD=$(TC_PREFIX)ld
+
 AS_FLAGS=-c -march=rv64i -mabi=lp64
 
-.build/entry.o: src/entry.s
-	riscv64-elf-as $(AS_FLAGS) -o .build/entry.o src/entry.s
+.build/entry.o: src/rv64/entry.s
+	$(AS) $(AS_FLAGS) -o .build/entry.o src/rv64/entry.s
 
-CC_FLAGS=-c -O0 -march=rv64i -mabi=lp64 -mcmodel=medany
+CC_FLAGS=-c -O0 -march=rv64i -mabi=lp64 -mcmodel=medany -Isrc -std=c99 \
+	 -Wall -Wextra -Werror -fno-stack-protector -fno-pic -ffreestanding \
 
-.build/main.o: src/main.c
-	riscv64-elf-gcc $(CC_FLAGS) -o .build/main.o src/main.c
+.build/kernel.o: src/**/*.c src/**/*.h
+	$(CC) $(CC_FLAGS) -o .build/kernel.o src/build.c
 
 LD_FLAGS=--no-dynamic-linker -m elf64lriscv -static -nostdlib -s
 
-bin/kernel: .build/entry.o .build/main.o scripts/kernel.ld
-	riscv64-elf-ld $(LD_FLAGS) -T scripts/kernel.ld -o bin/kernel .build/*.o
+bin/kernel: .build/entry.o .build/kernel.o scripts/kernel.ld
+	$(LD) $(LD_FLAGS) -T scripts/kernel.ld -o bin/kernel .build/*.o
