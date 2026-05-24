@@ -35,6 +35,8 @@
 *.i*86
 *.x86_64
 *.hex
+
+# Binary directory
 bin
 
 # Debug files
@@ -54,3 +56,6 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# LSP files
+compile_commands.json
