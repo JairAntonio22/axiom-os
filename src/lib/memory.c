@@ -1,4 +1,4 @@
-#include "lib.h"
+#include <lib/lib.h>
 
 void memset(void *mem, uint8_t val, size_t len) {
 	uint8_t *buf = (uint8_t*) mem;

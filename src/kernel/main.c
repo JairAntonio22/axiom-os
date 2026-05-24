@@ -1,4 +1,4 @@
-#include "kernel.h"
+#include <kernel/kernel.h>
 
 void kmain() {
 	kalloc_init();

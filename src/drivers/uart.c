@@ -1,4 +1,5 @@
-#include "uart.h"
+#include <lib/lib.h>
+#include <drivers/uart.h>
 
 volatile uint8_t *mmio_uart = (volatile uint8_t*) (0x10000000);
 
