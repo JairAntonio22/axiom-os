@@ -1,5 +1,5 @@
-#include <kernel/kernel.h>
-#include <drivers/uart.h>
+#include <kernel.h>
+#include <uart.h>
 #include <stdarg.h>
 
 void printf(char *fmt, ...) {

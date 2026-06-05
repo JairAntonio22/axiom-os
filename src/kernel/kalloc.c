@@ -1,4 +1,4 @@
-#include <kernel/kernel.h>
+#include <kernel.h>
 
 extern uint8_t *memory_begin;
 extern uint8_t *memory_end;

@@ -1,7 +1,7 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
-#include <lib/lib.h>
+#include <lib.h>
 
 extern uint8_t *memory_begin;
 extern uint8_t *memory_end;

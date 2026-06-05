@@ -1,7 +1,7 @@
-#include <lib/lib.h>
+#include <lib.h>
 
-void *arena_alloc(struct arena *a, size_t num_bytes) {
-	size_t total = align_up(num_bytes, 16);
+void *arena_alloc_align(struct arena *a, size_t num_bytes, size_t align) {
+	size_t total = align_up(num_bytes, align);
 
 	if (a->len + total >= a->cap) {
 		return NULL;
@@ -10,6 +10,12 @@ void *arena_alloc(struct arena *a, size_t num_bytes) {
 	void *ptr = a->buf + a->len;
 	a->len += total;
 	return ptr;
+}
+
+#define DEFAULT_ALIGNMENT 0x10
+
+void *arena_alloc(struct arena *a, size_t num_bytes) {
+	return arena_alloc_align(a, num_bytes, DEFAULT_ALIGNMENT);
 }
 
 void *arena_zalloc(struct arena *a, size_t num_bytes) {

@@ -2,35 +2,53 @@
 
 .PHONY: all run clean
 
-all: bin/kernel
+all: bin/kernel.elf
 
 QEMU_FLAGS=-display none -serial mon:stdio
 
-run: bin/kernel
-	qemu-system-riscv64 $(QEMU_FLAGS) -machine virt -bios bin/kernel
+run: bin/kernel.elf
+	qemu-system-riscv64 $(QEMU_FLAGS) -machine virt -bios bin/kernel.elf
 
 clean:
-	rm -fr bin/*
-	rm -fr .build/*
+	rm -fr bin
+	rm -fr build
 
-TC_PREFIX=riscv64-elf-
+# Toolchain
 
-AS=$(TC_PREFIX)as
-CC=$(TC_PREFIX)gcc
-LD=$(TC_PREFIX)ld
+AS=riscv64-elf-as
+CC=riscv64-elf-gcc
+LD=riscv64-elf-ld
+
+# Assembly files compilation
+
+AS_SRCS=$(shell find src -name '*.s')
+AS_OBJS=$(AS_SRCS:src/%.s=build/%.o)
 
 AS_FLAGS=-c -march=rv64i -mabi=lp64
 
-.build/entry.o: src/rv64/entry.s
-	$(AS) $(AS_FLAGS) -o .build/entry.o src/rv64/entry.s
+build/%.o: src/%.s
+	mkdir -p $(dir $@)
+	$(AS) $(AS_FLAGS) -o $@ $<
 
-CC_FLAGS=-c -O0 -march=rv64i -mabi=lp64 -mcmodel=medany -Isrc -std=c99 \
-	 -Wall -Wextra -Werror -fno-stack-protector -fno-pic -ffreestanding \
+# C files compilation
 
-.build/kernel.o: src/**/*.c src/**/*.h
-	$(CC) $(CC_FLAGS) -o .build/kernel.o src/build.c
+CC_FLAGS=-c -O0 -march=rv64i -mabi=lp64 -mcmodel=medany -Iinclude -std=c99 \
+	 -Wall -Wextra -Werror -fno-stack-protector -fno-pic -ffreestanding
 
-LD_FLAGS=--no-dynamic-linker -m elf64lriscv -static -nostdlib -s
+C_SRCS=$(shell find src -name '*.c')
+C_OBJS=$(C_SRCS:src/%.c=build/%.o)
 
-bin/kernel: .build/entry.o .build/kernel.o scripts/kernel.ld
-	$(LD) $(LD_FLAGS) -T scripts/kernel.ld -o bin/kernel .build/*.o
+build/%.o: src/%.c
+	mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS) -o $@ $<
+
+# Kernel linking
+
+OBJS=$(AS_OBJS) $(C_OBJS)
+
+LD_FLAGS=-T scripts/kernel.ld --no-dynamic-linker -m elf64lriscv -static \
+	 -nostdlib -s
+
+bin/kernel.elf: $(OBJS)
+	mkdir -p $(dir $@)
+	$(LD) $(LD_FLAGS) -o $@ $(OBJS)
