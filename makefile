@@ -32,8 +32,9 @@ build/%.o: src/%.s
 
 # C files compilation
 
-CC_FLAGS=-c -O0 -march=rv64i -mabi=lp64 -mcmodel=medany -Iinclude -std=c99 \
-	 -Wall -Wextra -Werror -fno-stack-protector -fno-pic -ffreestanding
+CC_FLAGS=-c -march=rv64i -mabi=lp64 -mcmodel=medany -Iinclude -std=c99 \
+	 -Wall -Wextra -Werror -fno-stack-protector -fno-pic -ffreestanding \
+	 -MMD -MP
 
 C_SRCS=$(shell find src -name '*.c')
 C_OBJS=$(C_SRCS:src/%.c=build/%.o)
@@ -45,6 +46,7 @@ build/%.o: src/%.c
 # Kernel linking
 
 OBJS=$(AS_OBJS) $(C_OBJS)
+DEPS=$(OBJS:.o=.d)
 
 LD_FLAGS=-T scripts/kernel.ld --no-dynamic-linker -m elf64lriscv -static \
 	 -nostdlib -s
@@ -52,3 +54,5 @@ LD_FLAGS=-T scripts/kernel.ld --no-dynamic-linker -m elf64lriscv -static \
 bin/kernel.elf: $(OBJS)
 	mkdir -p $(dir $@)
 	$(LD) $(LD_FLAGS) -o $@ $(OBJS)
+
+-include $(DEPS)
