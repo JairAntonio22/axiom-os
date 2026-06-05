@@ -1,4 +1,6 @@
-#include <kernel.h>
+#include <kernel/kalloc.h>
+
+#include <lib/arena.h>
 
 extern uint8_t *memory_begin;
 extern uint8_t *memory_end;

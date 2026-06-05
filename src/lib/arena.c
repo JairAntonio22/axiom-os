@@ -1,4 +1,6 @@
-#include <lib.h>
+#include <lib/arena.h>
+
+#include <lib/memory.h>
 
 void *arena_alloc_align(struct arena *a, size_t num_bytes, size_t align) {
 	size_t total = align_up(num_bytes, align);
