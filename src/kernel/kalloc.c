@@ -2,8 +2,6 @@
 
 #include <lib/arena.h>
 
-#include <kernel/printf.h>
-
 extern uint8_t memory_begin;
 extern uint8_t memory_end;
 
@@ -13,9 +11,6 @@ void kalloc_init()
 {
 	kalloc.buf = &memory_begin;
 	kalloc.cap = &memory_end - &memory_begin;
-
-	printf("memory begin: %x\n", &memory_begin);
-	printf("memory end: %x\n", &memory_end);
 }
 
 void *kmalloc(size_t num_bytes)

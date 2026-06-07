@@ -60,7 +60,7 @@ void print_number(uint64_t n)
 	uint64_t offset = 60;
 
 	for (int i = 0; i < 16; i++) {
-		uint8_t byte = (n & (0xf << offset)) >> offset;
+		uint8_t byte = (n & (0xfULL << offset)) >> offset;
 
 		if (byte < 10) {
 			uart_putc(byte + '0');
