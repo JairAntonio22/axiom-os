@@ -44,9 +44,7 @@ void printf(char *fmt, ...)
 		} break;
 
 		default: {
-			uint64_t arg = va_arg(args, uint64_t);
-			uart_putc(arg);
-			fmt++;
+			uart_putc(*fmt++);
 		} break;
 		}
 	}

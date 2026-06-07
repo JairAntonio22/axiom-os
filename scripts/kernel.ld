@@ -15,7 +15,7 @@ SECTIONS {
     . = ALIGN(16);
 
     memory_begin = .;
-    . = 4K;
+    . += 4K;
     memory_end = .;
   }
 }

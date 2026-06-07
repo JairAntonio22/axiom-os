@@ -36,6 +36,6 @@ void arena_free(struct arena *a)
 
 void arena_zfree(struct arena *a)
 {
-	memzero(a->buf, a->cap);
+	memzero(a->buf, a->len);
 	a->len = 0;
 }
