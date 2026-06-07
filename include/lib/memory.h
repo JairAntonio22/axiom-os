@@ -9,6 +9,6 @@ void memzero(void *mem, size_t len);
 
 void memcpy(void *dst, void *src, size_t len);
 
-size_t strlen(char *s) ;
+size_t strlen(char *s);
 
 #endif

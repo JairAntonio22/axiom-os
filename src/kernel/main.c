@@ -1,6 +1,7 @@
 #include <kernel/printf.h>
 
-void kmain() {
+void kmain()
+{
 	printf("Hello, World!\n");
 	printf("\n");
 
