@@ -19,29 +19,30 @@ AS=riscv64-elf-as
 CC=riscv64-elf-gcc
 LD=riscv64-elf-ld
 
+# Architecture and ABI
+
+ARCH=-march=rv64imac_zicsr_zifencei -mabi=lp64
+
 # Assembly files compilation
 
 AS_SRCS=$(shell find src -name '*.s')
 AS_OBJS=$(AS_SRCS:src/%.s=build/%.o)
 
-AS_FLAGS=-c -march=rv64i -mabi=lp64
-
 build/%.o: src/%.s
 	mkdir -p $(dir $@)
-	$(AS) $(AS_FLAGS) -o $@ $<
+	$(AS) $(ARCH) -c -o $@ $<
 
 # C files compilation
 
-CC_FLAGS=-c -march=rv64i -mabi=lp64 -mcmodel=medany -Iinclude -std=c99 \
-	 -Wall -Wextra -Werror -fno-stack-protector -fno-pic -ffreestanding \
-	 -MMD -MP
+CC_FLAGS=-c -mcmodel=medany -Iinclude -std=c99 -Wall -Wextra \
+	-fno-stack-protector -fno-pic -ffreestanding -MMD -MP
 
 C_SRCS=$(shell find src -name '*.c')
 C_OBJS=$(C_SRCS:src/%.c=build/%.o)
 
 build/%.o: src/%.c
 	mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o $@ $<
+	$(CC) $(ARCH) $(CC_FLAGS) -o $@ $<
 
 # Kernel linking
 

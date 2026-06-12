@@ -1,8 +1,57 @@
+#include <kernel/printf.h>
+
 #include <lib/base.h>
 #include <drivers/uart.h>
 #include <stdarg.h>
 
-void print_number(uint64_t n);
+static void print_hex(uint64_t n)
+{
+	uart_putc('0');
+	uart_putc('x');
+
+	uint64_t offset = 60;
+
+	for (int i = 0; i < 16; i++) {
+		uint8_t byte = (n & (0xfULL << offset)) >> offset;
+
+		if (byte < 10) {
+			uart_putc(byte + '0');
+
+		} else {
+			uart_putc((byte - 10) + 'a');
+		}
+
+		offset -= 4;
+	}
+}
+
+static void print_num(uint64_t n)
+{
+	if (!n) {
+		uart_putc('0');
+		return;
+	}
+
+	bool is_negative = (1ULL << 63) & n;
+
+	if (is_negative) {
+		uart_putc('-');
+		n = (uint64_t) ((int64_t) n) * -1;
+	}
+
+	char digits[21];
+	int i = 0;
+
+	while (n) {
+		char d = n % 10 + '0';
+		digits[i++] = d;
+		n /= 10;
+	}
+
+	while (i >= 0) {
+		uart_putc(digits[i--]);
+	}
+}
 
 void printf(char *fmt, ...)
 {
@@ -23,7 +72,13 @@ void printf(char *fmt, ...)
 
 		case 'x': {
 			uint64_t arg = va_arg(args, uint64_t);
-			print_number(arg);
+			print_hex(arg);
+			fmt += 2;
+		} break;
+
+		case 'd': {
+			uint64_t arg = va_arg(args, uint64_t);
+			print_num(arg);
 			fmt += 2;
 		} break;
 
@@ -50,27 +105,6 @@ void printf(char *fmt, ...)
 	}
 
 	va_end(args);
-}
-
-void print_number(uint64_t n)
-{
-	uart_putc('0');
-	uart_putc('x');
-
-	uint64_t offset = 60;
-
-	for (int i = 0; i < 16; i++) {
-		uint8_t byte = (n & (0xfULL << offset)) >> offset;
-
-		if (byte < 10) {
-			uart_putc(byte + '0');
-
-		} else {
-			uart_putc((byte - 10) + 'a');
-		}
-
-		offset -= 4;
-	}
 }
 
 void panic(char *msg)
