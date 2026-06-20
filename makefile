@@ -1,13 +1,8 @@
 .SILENT:
 
-.PHONY: all run clean
+.PHONY: all clean
 
 all: bin/kernel.elf
-
-QEMU_FLAGS=-display none -serial mon:stdio -M virt -bios bin/kernel.elf
-
-run: bin/kernel.elf
-	qemu-system-riscv64 $(QEMU_FLAGS)
 
 clean:
 	rm -fr bin

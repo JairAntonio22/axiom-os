@@ -6,6 +6,5 @@
 
 void kmain()
 {
-	trap_init();
-	__asm__ volatile("ecall");
+	printf("Hello, World!\n");
 }
