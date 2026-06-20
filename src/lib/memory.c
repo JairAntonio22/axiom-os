@@ -1,32 +1,32 @@
 #include <lib/arena.h>
 
-void memset(void *mem, uint8_t val, size_t len)
+void memset(void *mem, u8 val, usize len)
 {
-	uint8_t *buf = (uint8_t *)mem;
+	u8 *buf = (u8 *)mem;
 
-	for (size_t i = 0; i < len; i++) {
+	for (usize i = 0; i < len; i++) {
 		buf[i] = val;
 	}
 }
 
-void memzero(void *mem, size_t len)
+void memzero(void *mem, usize len)
 {
 	memset(mem, 0, len);
 }
 
-void memcpy(void *dst, void *src, size_t len)
+void memcpy(void *dst, void *src, usize len)
 {
-	uint8_t *buf_dst = (uint8_t *)dst;
-	uint8_t *buf_src = (uint8_t *)src;
+	u8 *buf_dst = (u8 *)dst;
+	u8 *buf_src = (u8 *)src;
 
-	for (size_t i = 0; i < len; i++) {
+	for (usize i = 0; i < len; i++) {
 		buf_dst[i] = buf_src[i];
 	}
 }
 
-size_t strlen(char *s)
+usize strlen(char *s)
 {
-	size_t len = 0;
+	usize len = 0;
 
 	while (*s++) {
 		len++;

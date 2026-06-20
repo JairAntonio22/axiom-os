@@ -9,7 +9,7 @@ void trap_handler(void);
 
 void trap_init(void)
 {
-	uint64_t addr = (uint64_t)trap_vector;
+	uptr addr = (uptr)trap_vector;
 	__asm__ volatile("csrw mtvec, %0" : : "r"(addr));
 }
 

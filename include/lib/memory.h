@@ -3,12 +3,12 @@
 
 #include <lib/base.h>
 
-void memset(void *mem, uint8_t val, size_t len);
+void memset(void *mem, u8 val, usize len);
 
-void memzero(void *mem, size_t len);
+void memzero(void *mem, usize len);
 
-void memcpy(void *dst, void *src, size_t len);
+void memcpy(void *dst, void *src, usize len);
 
-size_t strlen(char *s);
+usize strlen(char *s);
 
 #endif

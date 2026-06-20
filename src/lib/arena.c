@@ -4,11 +4,11 @@
 #include <lib/memory.h>
 #include <stdint.h>
 
-void *arena_alloc_align(struct arena *a, size_t num_bytes, size_t align)
+void *arena_alloc_align(struct arena *a, usize num_bytes, usize align)
 {
 	void *cursor = a->buf + a->len;
-	uint64_t ptr = align_up((uint64_t)cursor, align);
-	uint64_t pad = (ptr - (uint64_t)cursor);
+	uptr ptr = align_up((uptr)cursor, align);
+	usize pad = ptr - (uptr)cursor;
 
 	if (a->len + pad + num_bytes > a->cap) {
 		return NULL;
@@ -20,12 +20,12 @@ void *arena_alloc_align(struct arena *a, size_t num_bytes, size_t align)
 
 #define DEFAULT_ALIGNMENT 0x10
 
-void *arena_alloc(struct arena *a, size_t num_bytes)
+void *arena_alloc(struct arena *a, usize num_bytes)
 {
 	return arena_alloc_align(a, num_bytes, DEFAULT_ALIGNMENT);
 }
 
-void *arena_zalloc(struct arena *a, size_t num_bytes)
+void *arena_zalloc(struct arena *a, usize num_bytes)
 {
 	void *ptr = arena_alloc(a, num_bytes);
 

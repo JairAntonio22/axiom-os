@@ -4,15 +4,15 @@
 #include <drivers/uart.h>
 #include <stdarg.h>
 
-static void print_hex(uint64_t n)
+static void print_hex(u64 n)
 {
 	uart_putc('0');
 	uart_putc('x');
 
-	uint64_t offset = 60;
+	u64 offset = 60;
 
 	for (int i = 0; i < 16; i++) {
-		uint8_t byte = (n & (0xfULL << offset)) >> offset;
+		u8 byte = (n & (0xfULL << offset)) >> offset;
 
 		if (byte < 10) {
 			uart_putc(byte + '0');
@@ -73,7 +73,7 @@ void printf(char *fmt, ...)
 		} break;
 
 		case 'x': {
-			uint64_t arg = va_arg(args, uint64_t);
+			u64 arg = va_arg(args, u64);
 			print_hex(arg);
 			fmt += 2;
 		} break;

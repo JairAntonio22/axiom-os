@@ -2,8 +2,8 @@
 
 #include <lib/arena.h>
 
-extern uint8_t memory_begin;
-extern uint8_t memory_end;
+extern u8 memory_begin;
+extern u8 memory_end;
 
 struct arena kalloc;
 
@@ -13,12 +13,12 @@ void kalloc_init()
 	kalloc.cap = &memory_end - &memory_begin;
 }
 
-void *kmalloc(size_t num_bytes)
+void *kmalloc(usize num_bytes)
 {
 	return arena_alloc(&kalloc, num_bytes);
 }
 
-void *kzalloc(size_t num_bytes)
+void *kzalloc(usize num_bytes)
 {
 	return arena_zalloc(&kalloc, num_bytes);
 }
