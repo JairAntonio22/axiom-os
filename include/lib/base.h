@@ -1,5 +1,5 @@
-#ifndef LIB_H
-#define LIB_H
+#ifndef BASE_H
+#define BASE_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -9,11 +9,23 @@
 #define MB(num) (KB(num) * 1024ULL)
 #define GB(num) (MB(num) * 1024ULL)
 
-#define assert(pred) \
-	if (!(pred)) \
+static inline void assert(bool pred)
+{
+	if (!(pred)) {
 		*(volatile int32_t *)0 = 0;
+	}
+}
 
-#define align_up(num, aln) (1 + (num | (num ^ (aln - 1))))
-#define align_down(num, aln) (1 + ((num & (aln - 1) | (aln - 1))
+static inline uint64_t align_up(uint64_t num, uint64_t aln)
+{
+	assert(aln && (aln & (aln - 1)) == 0);
+	return num + (aln - (num & (aln - 1)));
+}
+
+static inline uint64_t align_down(uint64_t num, uint64_t aln)
+{
+	assert(aln && (aln & (aln - 1)) == 0);
+	return num - (num & (aln - 1));
+}
 
 #endif

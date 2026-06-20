@@ -12,6 +12,7 @@ run: bin/kernel.elf
 clean:
 	rm -fr bin
 	rm -fr build
+	rm -f a.out
 
 # Toolchain
 
@@ -30,12 +31,12 @@ AS_OBJS=$(AS_SRCS:src/%.s=build/%.o)
 
 build/%.o: src/%.s
 	mkdir -p $(dir $@)
-	$(AS) $(ARCH) -c -o $@ $<
+	$(AS) $(ARCH) -g -c -o $@ $<
 
 # C files compilation
 
-CC_FLAGS=-c -mcmodel=medany -Iinclude -std=c99 -Wall -Wextra \
-	-fno-stack-protector -fno-pic -ffreestanding -MMD -MP
+CC_FLAGS=-g -c -mcmodel=medany -Iinclude -std=c99 -Wall -Wextra -MMD -MP \
+	-fno-stack-protector -fno-pic -ffreestanding
 
 C_SRCS=$(shell find src -name '*.c')
 C_OBJS=$(C_SRCS:src/%.c=build/%.o)

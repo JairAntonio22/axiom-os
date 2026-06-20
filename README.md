@@ -100,7 +100,7 @@ Axiom currently uses a minimal bare-metal RISC-V toolchain setup:
 
 Target configuration:
 
-- Architecture: `rv64i`
+- Architecture: `rv64imac_zicsr_zifencei`
 - ABI: `lp64`
 
 The kernel is linked statically without libc or external runtime support.

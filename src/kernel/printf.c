@@ -25,21 +25,21 @@ static void print_hex(uint64_t n)
 	}
 }
 
-static void print_num(uint64_t n)
+static void print_num(int n)
 {
 	if (!n) {
 		uart_putc('0');
 		return;
 	}
 
-	bool is_negative = (1ULL << 63) & n;
+	bool is_negative = n < 0;
 
 	if (is_negative) {
 		uart_putc('-');
-		n = (uint64_t) ((int64_t) n) * -1;
+		n *= -1;
 	}
 
-	char digits[21];
+	char digits[15];
 	int i = 0;
 
 	while (n) {
@@ -47,6 +47,8 @@ static void print_num(uint64_t n)
 		digits[i++] = d;
 		n /= 10;
 	}
+
+	i--;
 
 	while (i >= 0) {
 		uart_putc(digits[i--]);
@@ -77,13 +79,13 @@ void printf(char *fmt, ...)
 		} break;
 
 		case 'd': {
-			uint64_t arg = va_arg(args, uint64_t);
+			int arg = va_arg(args, int);
 			print_num(arg);
 			fmt += 2;
 		} break;
 
 		case 'c': {
-			uint64_t arg = va_arg(args, uint64_t);
+			int arg = va_arg(args, int);
 			uart_putc(arg);
 			fmt += 2;
 		} break;
@@ -109,6 +111,6 @@ void printf(char *fmt, ...)
 
 void panic(char *msg)
 {
-	printf(msg);
+	printf("%s\n", msg);
 	assert(false);
 }

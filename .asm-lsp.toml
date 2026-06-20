@@ -6,7 +6,7 @@ instruction_set = "riscv"
 [default_config.opts]
 compiler = "riscv64-elf-as"
 compile_flags_txt = [
-    "-march=rv64i",
+    "-march=rv64imac_zicsr_zifencei",
     "-mabi=lp64",
 ]
 diagnostics = true
