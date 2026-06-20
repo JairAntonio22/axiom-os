@@ -4,7 +4,7 @@
 #include <lib/memory.h>
 #include <stdint.h>
 
-void *arena_alloc_align(struct arena *a, usize num_bytes, usize align)
+void *arena_alloc_align(arena *a, usize num_bytes, usize align)
 {
 	void *cursor = a->buf + a->len;
 	uptr ptr = align_up((uptr)cursor, align);
@@ -20,12 +20,12 @@ void *arena_alloc_align(struct arena *a, usize num_bytes, usize align)
 
 #define DEFAULT_ALIGNMENT 0x10
 
-void *arena_alloc(struct arena *a, usize num_bytes)
+void *arena_alloc(arena *a, usize num_bytes)
 {
 	return arena_alloc_align(a, num_bytes, DEFAULT_ALIGNMENT);
 }
 
-void *arena_zalloc(struct arena *a, usize num_bytes)
+void *arena_zalloc(arena *a, usize num_bytes)
 {
 	void *ptr = arena_alloc(a, num_bytes);
 
@@ -37,12 +37,12 @@ void *arena_zalloc(struct arena *a, usize num_bytes)
 	return ptr;
 }
 
-void arena_free(struct arena *a)
+void arena_free(arena *a)
 {
 	a->len = 0;
 }
 
-void arena_zfree(struct arena *a)
+void arena_zfree(arena *a)
 {
 	memzero(a->buf, a->len);
 	a->len = 0;

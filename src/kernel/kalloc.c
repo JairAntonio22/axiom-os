@@ -5,7 +5,7 @@
 extern u8 memory_begin;
 extern u8 memory_end;
 
-struct arena kalloc;
+arena kalloc;
 
 void kalloc_init()
 {
