@@ -1,0 +1,28 @@
+// Project tasks configuration. See https://zed.dev/docs/tasks for documentation.
+//
+// Example:
+[
+  {
+    "label": "run",
+    "command": "scripts/run.sh",
+    "reveal": "always",
+    "hide": "on_success",
+  },
+  {
+    "label": "build",
+    "command": "make",
+    "reveal": "never",
+    "hide": "always",
+  },
+  {
+    "label": "validate",
+    "command": "scripts/validate.sh",
+    "hide": "on_success",
+  },
+  {
+    "label": "clean",
+    "command": "make clean",
+    "reveal": "never",
+    "hide": "always",
+  },
+]
