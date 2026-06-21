@@ -37,12 +37,12 @@ void *arena_zalloc(arena *a, usize num_bytes)
 	return ptr;
 }
 
-void arena_free(arena *a)
+void arena_reset(arena *a)
 {
 	a->len = 0;
 }
 
-void arena_zfree(arena *a)
+void arena_zreset(arena *a)
 {
 	memzero(a->buf, a->len);
 	a->len = 0;

@@ -100,6 +100,17 @@ void printf(char *fmt, ...)
 			fmt += 2;
 		} break;
 
+		case 'b': {
+			int arg = va_arg(args, int);
+			char *txt = arg ? "true" : "false";
+
+			while (*txt) {
+				uart_putc(*txt++);
+			}
+
+			fmt += 2;
+		} break;
+
 		default: {
 			uart_putc(*fmt++);
 		} break;

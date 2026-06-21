@@ -27,6 +27,26 @@ The project takes strong inspiration from systems and people that valued clarity
 
 ---
 
+## Use of AI
+
+Axiom is developed with assistance from AI tools.
+
+This is intentional and disclosed openly. The goal of the project is learning operating system development, not pretending that every explanation, review, or edit happened in isolation.
+
+AI is used primarily as a mentor and review partner:
+
+- explaining RISC-V and operating-system concepts;
+- helping break large topics into small, verifiable steps;
+- reviewing code for bugs, unclear behavior, and design risks;
+- maintaining project notes and backlog context;
+- making focused edits when explicitly requested.
+
+AI is not treated as an oracle or as a substitute for understanding the system. Design decisions, code that enters the kernel, and the responsibility for correctness remain with the project author.
+
+The `.agent/` directory contains persistent context for AI-assisted development. If it appears in the repository, it should be understood as part of the project's transparent development process, not as hidden authorship or an attempt to misrepresent the work.
+
+---
+
 ## Current Status
 
 Axiom is currently in very early development.

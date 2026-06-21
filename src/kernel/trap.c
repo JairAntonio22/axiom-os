@@ -1,21 +1,46 @@
 #include <kernel/trap.h>
-
-#include <lib/base.h>
 #include <kernel/printf.h>
-#include <stdint.h>
+
+#include <rv64/csr.h>
+#include <stdbool.h>
 
 extern void trap_vector(void);
-void trap_handler(void);
 
 void trap_init(void)
 {
-	uptr addr = (uptr)trap_vector;
-	__asm__ volatile("csrw mtvec, %0" : : "r"(addr));
+	write_mtvec((uptr)trap_vector);
 }
-
-volatile int trap_hit = 0;
 
 void trap_handler(void)
 {
-	trap_hit = 1234;
+	u64 mcause = read_mcause();
+	uptr mepc = read_mepc();
+
+	if (mcause_is_interrupt(mcause)) {
+		interrupt_code code = mcause_code(mcause);
+
+		switch (code) {
+		default: {
+			printf("unhandled interrupt: %d", code);
+
+			while (true) {
+			}
+		} break;
+		}
+	} else {
+		exception_code code = mcause_code(mcause);
+
+		switch (mcause_code(mcause)) {
+		case ENVIRONMENT_CALL_FROM_M_MODE: {
+			write_mepc(mepc + 4);
+		} break;
+
+		default: {
+			printf("unhandled exception: %d", code);
+
+			while (true) {
+			}
+		} break;
+		}
+	}
 }

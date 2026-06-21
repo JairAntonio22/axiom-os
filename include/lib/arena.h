@@ -15,8 +15,8 @@ void *arena_alloc(arena *a, usize num_bytes);
 
 void *arena_zalloc(arena *a, usize num_bytes);
 
-void arena_free(arena *a);
+void arena_reset(arena *a);
 
-void arena_zfree(arena *a);
+void arena_zreset(arena *a);
 
 #endif
