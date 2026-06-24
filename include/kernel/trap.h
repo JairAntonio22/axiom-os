@@ -1,6 +1,8 @@
 #ifndef TRAP_H
 #define TRAP_H
 
+#include <rv64/trap_frame.h>
+
 typedef enum {
 	INSTRUCTION_ADDRESS_MISALIGNED = 0,
 	INSTRUCTION_ACCESS_FAULT = 1,
@@ -34,5 +36,6 @@ typedef enum {
 extern volatile int trap_hit;
 
 void trap_init(void);
+void trap_handler(trap_frame *tf);
 
 #endif

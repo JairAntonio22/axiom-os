@@ -31,13 +31,11 @@ This board is intentionally high-level. Keep it updated when tasks move between 
 
 ## In Progress
 
-- Trap reporting: `mcause`, `mepc`, `mtval`
+- Runtime init policy: `.bss` clearing and `kmain` return behavior.
 
 ## Todo
 
-- Stop advancing `mepc` unconditionally.
-- Design minimal trap frame.
-- Runtime init policy: `.bss` clearing and `kmain` return behavior.
+- Timer interrupts after runtime init policy is settled.
 - UART readiness and register layout.
 - README build/run/validate instructions.
 - Revisit Zed debugger integration for QEMU remote GDB attach.
@@ -45,12 +43,15 @@ This board is intentionally high-level. Keep it updated when tasks move between 
 ## Testing
 
 - `compile_commands.json` sync.
+- Runtime trap validation in QEMU:
+  - Confirm expected M-mode `ecall` returns after advancing `mepc`.
+  - Confirm an unexpected trap prints `mcause`, `mepc`, and `mtval`, then halts.
+  - Keep artificial trap triggers out of normal boot once validation is complete.
 
 ## Blocked
 
 These are intentionally deferred until prerequisites are understood.
 
-- Timer interrupts.
 - Virtual memory.
 - Scheduler.
 - Filesystem.
@@ -72,80 +73,71 @@ These are intentionally deferred until prerequisites are understood.
 - Added Zed `validate` task.
 - Root-level wrappers intentionally not kept.
 - Debug task/scripts and `.zed/debug.json` intentionally not kept for now.
+- Trap reporting for `mcause`, `mepc`, and `mtval`.
+- Trap cause decoding distinguishes interrupts from exceptions.
+- `mepc` is advanced only for handled M-mode `ecall`.
+- Unknown exceptions and unhandled interrupts halt instead of silently continuing.
+- Minimal trap frame added and used by the trap vector.
+- Trap vector preserves general-purpose register context before calling C.
 
 ## Board Notes
 
-- Move trap reporting to `Testing` once `mcause`, `mepc`, and `mtval` are printed and explained.
-- Move `mepc` handling to `Done` only after unknown traps halt instead of silently continuing.
+- Keep runtime initialization focused on explicit `.bss` clearing and defined behavior if `kmain` returns.
+- Move timer interrupts into active work only after the runtime init policy is settled.
 - Keep this board in sync with the priority sections below.
 
 ---
 
 # Priority 1: Trap Handling Foundations
 
+Status: completed for the current bare-metal foundation.
+
 Files:
 
 - `src/kernel/trap.c`
-- `src/kernel/trap_vector.s`
+- `src/rv64/trap_vector.s`
 - `include/kernel/trap.h`
+- `include/rv64/trap_frame.h`
+- `include/rv64/csr.h`
 
 Current state:
 
 - `mtvec` is set to `trap_vector`.
-- `ecall` reaches the trap handler.
-- `trap_handler` only sets a global value.
-- `trap_vector` always advances `mepc` by 4.
-- Registers are not preserved before calling C.
+- The trap vector builds a minimal `trap_frame` on the current stack.
+- General-purpose registers are saved before calling C and restored before `mret`.
+- `mcause`, `mepc`, and `mtval` are captured in the trap frame.
+- `trap_handler` distinguishes interrupts from synchronous exceptions.
+- M-mode `ecall` is handled by advancing `mepc` by 4.
+- Unknown exceptions halt after dumping trap details.
+- Unhandled interrupts halt after dumping trap details.
+- The trap handler may update `tf->mepc`, and the trap vector writes it back before returning.
 
-## Issues
+Validation notes:
 
-### Trap vector does not preserve interrupted context
+- Build validation should continue to use `scripts/validate.sh`.
+- Runtime validation can use QEMU via `scripts/run.sh`.
+- Expected trap behavior to preserve:
+  - An intentional M-mode `ecall` returns to the next instruction.
+  - Unexpected traps print useful diagnostic state.
+  - Unknown traps do not silently continue.
+  - Interrupts are not treated like exceptions and do not receive unconditional `mepc += 4`.
 
-Calling C from a trap without saving registers can corrupt the interrupted code.
+Remaining future caveats:
 
-Need to study:
-
-- RISC-V calling convention.
-- caller-saved registers.
-- callee-saved registers.
-- trap frames.
-- stack alignment.
+- The current trap frame is sufficient for early M-mode kernel work, but may need revision when adding nested traps, preemption, privilege transitions, or per-hart stacks.
+- Interrupt handling is not implemented yet beyond classification and safe halt behavior.
+- Timer interrupt work should come next only after runtime initialization is made explicit.
+- More complete diagnostics may later decode known exception and interrupt names in human-readable form.
+- Trap behavior should be revalidated whenever the entry path, stack layout, calling convention assumptions, or CSR handling changes.
 
 Resources:
 
-- https://github.com/riscv-non-isa/riscv-asm-manual
-- https://github.com/riscv-non-isa/riscv-elf-psabi-doc
-
-### `mepc` is advanced unconditionally
-
-This is only appropriate for expected synchronous exceptions like `ecall`.
-
-It is not generally correct for:
-
-- illegal instructions,
-- memory faults,
-- misaligned accesses,
-- interrupts,
-- unknown exceptions.
-
-Goal:
-
-- Read and report `mcause`, `mepc`, and `mtval`.
-- Distinguish interrupt vs exception.
-- Advance `mepc` only when appropriate.
-- Halt on unknown exceptions.
-
-Success criteria:
-
-- An `ecall` is identified correctly.
-- The handler prints useful trap information.
-- Unknown traps stop the kernel instead of silently continuing.
-- Interrupts do not incorrectly advance `mepc`.
-
-Resource:
-
 - RISC-V Privileged Specification:
   https://riscv.org/technical/specifications/
+- RISC-V Assembly Programmer's Manual:
+  https://github.com/riscv-non-isa/riscv-asm-manual
+- RISC-V ELF psABI:
+  https://github.com/riscv-non-isa/riscv-elf-psabi-doc
 
 Important CSRs:
 
@@ -270,15 +262,21 @@ Priority:
 
 ---
 
-# Recommended Order Before Continuing Deeply With Traps
+# Recommended Order Before Continuing Deeply With Interrupts
 
-1. Improve trap reporting:
-   - `mcause`
-   - `mepc`
-   - `mtval`
-2. Stop advancing `mepc` unconditionally.
-3. Study and design a minimal trap frame.
-4. Then continue toward interrupts.
+1. Define runtime initialization policy:
+   - explicitly clear `.bss` before entering C,
+   - define what happens if `kmain` returns,
+   - keep stack setup assumptions documented and minimal.
+2. Add timer interrupt foundations:
+   - enable only the required machine-mode interrupt bits,
+   - program the QEMU `virt` timer source deliberately,
+   - handle timer interrupts without advancing `mepc`,
+   - keep diagnostics available for unexpected interrupt state.
+3. Revalidate trap behavior after timer work:
+   - expected `ecall` still returns correctly,
+   - unknown exceptions still halt,
+   - unhandled interrupts do not silently continue.
 
 Do not prioritize yet:
 
@@ -293,8 +291,8 @@ Do not prioritize yet:
 
 # Current Decision
 
-Refine the foundation before advancing.
+Trap handling foundations are complete enough for the current phase.
 
 The project does not need a major rewrite.
 
-The next technical work should return to trap reporting and `mepc` handling. Tooling is currently sufficient for that phase: use `scripts/validate.sh` for clean validation and `scripts/run.sh` for QEMU execution.
+The next technical work should focus on runtime initialization policy: explicit `.bss` clearing and defined `kmain` return behavior. After that, continue toward timer interrupts while keeping VM, scheduler, filesystem, userspace, and OpenSBI/S-mode work deferred.

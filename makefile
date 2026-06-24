@@ -22,9 +22,9 @@ ARCH=-march=rv64imac_zicsr_zifencei -mabi=lp64
 # Assembly files compilation
 
 AS_SRCS=$(shell find src -name '*.s')
-AS_OBJS=$(AS_SRCS:src/%.s=build/src/%.o)
+AS_OBJS=$(AS_SRCS:src/%.s=build/%.o)
 
-build/src/%.o: src/%.s
+build/%.o: src/%.s
 	mkdir -p $(dir $@)
 	$(AS) $(ARCH) -g -c -o $@ $<
 
@@ -34,9 +34,9 @@ CC_FLAGS=-g -c -mcmodel=medany -Iinclude -std=c99 -Wall -Wextra -MMD -MP \
 	-fno-stack-protector -fno-pic -ffreestanding
 
 C_SRCS=$(shell find src -name '*.c')
-C_OBJS=$(C_SRCS:src/%.c=build/src/%.o)
+C_OBJS=$(C_SRCS:src/%.c=build/%.o)
 
-build/src/%.o: src/%.c
+build/%.o: src/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(ARCH) $(CC_FLAGS) -o $@ $<
 

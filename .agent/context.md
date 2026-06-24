@@ -69,8 +69,9 @@ Known implemented pieces:
 - Basic memory helpers.
 - Basic arena-style allocator.
 - Linker script.
-- Early trap vector.
-- Experimental `ecall` trap path.
+- Trap vector with minimal trap frame.
+- Trap reporting for `mcause`, `mepc`, and `mtval`.
+- Controlled M-mode `ecall` return path.
 
 ## Recently Addressed Items
 
@@ -94,14 +95,16 @@ These were previously in the backlog and have been mostly addressed:
 - Runtime scripts are canonical under `scripts/`; no root-level wrappers are kept.
 - Zed tasks include `run`, `build`, `validate`, and `clean`.
 - Debugger setup was attempted and deferred; there is currently no `.zed/debug.json`, no debug task, and no debug helper script.
+- Trap vector now saves/restores general-purpose register context before calling C.
+- `trap_frame` captures `mcause`, `mepc`, and `mtval` and is passed to `trap_handler`.
+- `trap_handler` distinguishes interrupts from exceptions, advances `mepc` only for handled M-mode `ecall`, and halts on unknown traps.
 
 ## Current Known Risk Areas
 
 Important unresolved technical risks:
 
-- Trap vector calls C without preserving full interrupted context.
-- Trap vector advances `mepc` unconditionally.
-- Trap handler does not yet report `mcause`, `mepc`, `mtval`.
+- Runtime trap validation still relies on manual QEMU triggers rather than a formal test harness.
+- Interrupt handling is not implemented yet beyond classification and safe halt behavior.
 - `.bss` clearing is not explicitly guaranteed by startup code.
 - `kmain` return behavior should be explicit.
 - `compile_commands.json` may be stale and still use `rv64i`.
@@ -130,7 +133,7 @@ When giving help, prefer:
 
 Next focus:
 
-1. Improve trap reporting with `mcause`, `mepc`, and `mtval`.
-2. Stop advancing `mepc` unconditionally.
-3. Study and design a minimal trap frame.
-4. Then continue toward interrupts.
+1. Define runtime initialization policy.
+2. Explicitly clear `.bss` before entering C.
+3. Define what happens if `kmain` returns.
+4. Then continue toward timer interrupts.

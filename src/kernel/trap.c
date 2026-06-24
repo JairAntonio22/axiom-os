@@ -2,7 +2,6 @@
 #include <kernel/printf.h>
 
 #include <rv64/csr.h>
-#include <stdbool.h>
 
 extern void trap_vector(void);
 
@@ -11,36 +10,53 @@ void trap_init(void)
 	write_mtvec((uptr)trap_vector);
 }
 
-void trap_handler(void)
+static void trap_dump(trap_frame *tf)
 {
-	u64 mcause = read_mcause();
-	uptr mepc = read_mepc();
+	printf("raw mcause: %x\n", tf->mcause);
+	printf("interrupt?  %b\n", mcause_is_interrupt(tf->mcause));
+	printf("cause code: %d\n", mcause_code(tf->mcause));
+	printf("mepc:       %x\n", tf->mepc);
+	printf("mtval:      %x\n", tf->mtval);
+}
 
-	if (mcause_is_interrupt(mcause)) {
-		interrupt_code code = mcause_code(mcause);
+static void trap_panic(trap_frame *tf)
+{
+	trap_dump(tf);
+	for (;;) {
+	}
+}
 
-		switch (code) {
-		default: {
-			printf("unhandled interrupt: %d", code);
+static void trap_interrupt(trap_frame *tf)
+{
+	interrupt_code code = mcause_code(tf->mcause);
 
-			while (true) {
-			}
-		} break;
-		}
+	switch (code) {
+	default: {
+		trap_panic(tf);
+	} break;
+	}
+}
+
+static void trap_exception(trap_frame *tf)
+{
+	exception_code code = mcause_code(tf->mcause);
+
+	switch (code) {
+	case ENVIRONMENT_CALL_FROM_M_MODE: {
+		tf->mepc += 4;
+	} break;
+
+	default: {
+		trap_panic(tf);
+	} break;
+	}
+}
+
+void trap_handler(trap_frame *tf)
+{
+	if (mcause_is_interrupt(tf->mcause)) {
+		trap_interrupt(tf);
 	} else {
-		exception_code code = mcause_code(mcause);
-
-		switch (mcause_code(mcause)) {
-		case ENVIRONMENT_CALL_FROM_M_MODE: {
-			write_mepc(mepc + 4);
-		} break;
-
-		default: {
-			printf("unhandled exception: %d", code);
-
-			while (true) {
-			}
-		} break;
-		}
+		trap_exception(tf);
 	}
 }
