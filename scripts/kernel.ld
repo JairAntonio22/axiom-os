@@ -4,18 +4,19 @@ SECTIONS {
     KEEP(*(.text._start));
     *(.text*);
   }
-  .rodata : { 
+  .rodata : {
     *(.rodata*)
   }
-  .data : { 
+  .data : {
     *(.data*)
   }
   .bss : {
+    bss_start = .;
     *(.bss*)
-    . = ALIGN(16);
-
-    memory_begin = .;
-    . += 4K;
-    memory_end = .;
+    bss_end = .;
   }
+  . = ALIGN(16);
+  memory_begin = .;
+  . += 4K;
+  memory_end = .;
 }

@@ -36,6 +36,7 @@ typedef enum {
 extern volatile int trap_hit;
 
 void trap_init(void);
+
 void trap_handler(trap_frame *tf);
 
 #endif

@@ -31,11 +31,11 @@ This board is intentionally high-level. Keep it updated when tasks move between 
 
 ## In Progress
 
-- Runtime init policy: `.bss` clearing and `kmain` return behavior.
+- Timer interrupt research: QEMU `virt` timer source, required CSRs, and reprogramming strategy.
 
 ## Todo
 
-- Timer interrupts after runtime init policy is settled.
+- Revisit initial stack placement and ownership.
 - UART readiness and register layout.
 - README build/run/validate instructions.
 - Revisit Zed debugger integration for QEMU remote GDB attach.
@@ -79,11 +79,14 @@ These are intentionally deferred until prerequisites are understood.
 - Unknown exceptions and unhandled interrupts halt instead of silently continuing.
 - Minimal trap frame added and used by the trap vector.
 - Trap vector preserves general-purpose register context before calling C.
+- Runtime entry explicitly clears `.bss` before entering C.
+- If `kmain` returns, `entry.s` falls back to a known infinite loop.
+- Initial allocator memory range is separated from `.bss` in the linker script.
 
 ## Board Notes
 
-- Keep runtime initialization focused on explicit `.bss` clearing and defined behavior if `kmain` returns.
-- Move timer interrupts into active work only after the runtime init policy is settled.
+- Keep stack placement as a follow-up; the current stack works but still lives in `.data`.
+- Timer interrupts are the next active research area now that basic runtime initialization is explicit.
 - Keep this board in sync with the priority sections below.
 
 ---
@@ -158,22 +161,19 @@ Files:
 - `src/rv64/entry.s`
 - `scripts/kernel.ld`
 
-Issues:
+Status: completed for the current foundation, with stack placement left as a follow-up.
 
-- `.bss` clearing is not explicitly handled.
-- `kmain` may return, but kernel entry should define what happens if it does.
-- Stack setup is minimal.
+Current state:
 
-Goals:
+- `entry.s` sets the initial stack before entering C.
+- `entry.s` clears `.bss` byte-by-byte using `bss_start` and `bss_end` from the linker script.
+- `entry.s` calls `kmain`, so a return from `kmain` reaches the fallback loop.
+- `scripts/kernel.ld` exposes `bss_start`, `bss_end`, `memory_begin`, and `memory_end`.
+- `memory_begin` and `memory_end` are outside `.bss`.
 
-- Understand minimal freestanding runtime responsibilities.
-- Decide whether `kmain` must never return.
-- Eventually clear `.bss` explicitly before entering C.
+Remaining follow-up:
 
-Success criteria:
-
-- Global zero-initialized data is reliable by design, not accident.
-- If `kmain` returns, the kernel enters a known halt loop.
+- Revisit initial stack placement and ownership. The current stack is defined in `.data`; a future cleanup may move it to a clearer stack-specific area once the desired memory layout is better understood.
 
 ---
 
@@ -264,10 +264,10 @@ Priority:
 
 # Recommended Order Before Continuing Deeply With Interrupts
 
-1. Define runtime initialization policy:
-   - explicitly clear `.bss` before entering C,
-   - define what happens if `kmain` returns,
-   - keep stack setup assumptions documented and minimal.
+1. Research timer interrupt foundations:
+   - identify the QEMU `virt` timer source,
+   - identify the required machine-mode CSRs and bits,
+   - decide how the next tick is programmed.
 2. Add timer interrupt foundations:
    - enable only the required machine-mode interrupt bits,
    - program the QEMU `virt` timer source deliberately,

@@ -2,9 +2,20 @@
 .global _start
 
 _start:
-	add s0, sp, zero
-	la sp, __stack_top
-	jal zero, kmain
+	la sp, stack_top	# setting stack pointer
+	mv s0, sp		# setting frame pointer
+
+	# initialize bss
+	la t0, bss_start
+	la t1, bss_end
+bss_init_loop:
+	bgeu t0, t1, bss_init_end
+	sb zero, 0(t0)
+	addi t0, t0, 1
+	j bss_init_loop
+bss_init_end:
+
+	call kmain		# jumping to kernel main
 
 loop:
 	j loop
@@ -13,4 +24,4 @@ loop:
 .space 1024 * 8
 .align 16
 
-__stack_top:
+stack_top:

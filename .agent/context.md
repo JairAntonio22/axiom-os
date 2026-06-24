@@ -72,6 +72,8 @@ Known implemented pieces:
 - Trap vector with minimal trap frame.
 - Trap reporting for `mcause`, `mepc`, and `mtval`.
 - Controlled M-mode `ecall` return path.
+- Explicit `.bss` clearing in `entry.s` before entering C.
+- Known fallback loop if `kmain` returns.
 
 ## Recently Addressed Items
 
@@ -98,6 +100,8 @@ These were previously in the backlog and have been mostly addressed:
 - Trap vector now saves/restores general-purpose register context before calling C.
 - `trap_frame` captures `mcause`, `mepc`, and `mtval` and is passed to `trap_handler`.
 - `trap_handler` distinguishes interrupts from exceptions, advances `mepc` only for handled M-mode `ecall`, and halts on unknown traps.
+- `entry.s` initializes the stack, clears `.bss` using `bss_start`/`bss_end`, calls `kmain`, and falls back to an infinite loop if `kmain` returns.
+- `scripts/kernel.ld` exposes `bss_start`, `bss_end`, `memory_begin`, and `memory_end`; the initial allocator memory range is outside `.bss`.
 
 ## Current Known Risk Areas
 
@@ -105,8 +109,7 @@ Important unresolved technical risks:
 
 - Runtime trap validation still relies on manual QEMU triggers rather than a formal test harness.
 - Interrupt handling is not implemented yet beyond classification and safe halt behavior.
-- `.bss` clearing is not explicitly guaranteed by startup code.
-- `kmain` return behavior should be explicit.
+- Initial stack placement and ownership should be revisited; the current stack works but still lives in `.data`.
 - `compile_commands.json` may be stale and still use `rv64i`.
 - README build/run/validate instructions should match `Makefile`, `scripts/run.sh`, `scripts/validate.sh`, and Zed tasks. Debug instructions are deferred until the workflow is reintroduced.
 
@@ -133,7 +136,7 @@ When giving help, prefer:
 
 Next focus:
 
-1. Define runtime initialization policy.
-2. Explicitly clear `.bss` before entering C.
-3. Define what happens if `kmain` returns.
-4. Then continue toward timer interrupts.
+1. Research timer interrupt foundations for QEMU `virt`.
+2. Identify the timer source, required machine-mode CSRs/bits, and reprogramming strategy.
+3. Implement a minimal machine timer interrupt only after the design is understood.
+4. Revisit initial stack placement later as a focused cleanup.
