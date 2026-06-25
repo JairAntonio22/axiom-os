@@ -1,7 +1,5 @@
 #include <drivers/clint.h>
 
-#include <lib/base.h>
-
 static volatile u64 *mmreg_mtimecmp = (volatile u64 *)(0x02004000);
 
 static volatile u64 *mmreg_mtime = (volatile u64 *)(0x0200bff8);

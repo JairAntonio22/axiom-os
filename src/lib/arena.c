@@ -1,8 +1,5 @@
-#include <lib/base.h>
 #include <lib/arena.h>
-
 #include <lib/memory.h>
-#include <stdint.h>
 
 void *arena_alloc_align(arena *a, usize num_bytes, usize align)
 {
