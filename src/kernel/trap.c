@@ -1,5 +1,6 @@
 #include <kernel/trap.h>
 #include <kernel/printf.h>
+#include <kernel/timer.h>
 
 #include <rv64/csr.h>
 
@@ -7,7 +8,7 @@ extern void trap_vector(void);
 
 void trap_init(void)
 {
-	write_mtvec((uptr)trap_vector);
+	mtvec_write((uptr)trap_vector);
 }
 
 static void trap_dump(trap_frame *tf)
@@ -31,6 +32,10 @@ static void trap_interrupt(trap_frame *tf)
 	interrupt_code code = mcause_code(tf->mcause);
 
 	switch (code) {
+	case MACHINE_TIMER_INTERRUPT: {
+		timer_intr();
+	} break;
+
 	default: {
 		trap_panic(tf);
 	} break;

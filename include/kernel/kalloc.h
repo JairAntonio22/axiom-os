@@ -3,7 +3,7 @@
 
 #include <lib/base.h>
 
-void kalloc_init();
+void kalloc_init(void);
 
 void *kmalloc(usize num_bytes);
 

@@ -5,7 +5,11 @@
 
 // CSR read & write
 
-void write_mtvec(uptr val);
+void mtvec_write(uptr val);
+
+void mstatus_enable_mie(void);
+
+void mie_enable_mtie(void);
 
 // mcause utils
 

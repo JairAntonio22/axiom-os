@@ -33,8 +33,6 @@ typedef enum {
 	COUNTER_OVERFLOW_INTERRUPT = 13,
 } interrupt_code;
 
-extern volatile int trap_hit;
-
 void trap_init(void);
 
 void trap_handler(trap_frame *tf);

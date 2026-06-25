@@ -7,7 +7,7 @@ extern u8 memory_end;
 
 arena kalloc;
 
-void kalloc_init()
+void kalloc_init(void)
 {
 	kalloc.buf = &memory_begin;
 	kalloc.cap = &memory_end - &memory_begin;

@@ -31,18 +31,16 @@ This board is intentionally high-level. Keep it updated when tasks move between 
 
 ## In Progress
 
-- Timer interrupt research: QEMU `virt` timer source, required CSRs, and reprogramming strategy.
+- Revisit initial stack placement and ownership.
 
 ## Todo
 
-- Revisit initial stack placement and ownership.
 - UART readiness and register layout.
-- README build/run/validate instructions.
 - Revisit Zed debugger integration for QEMU remote GDB attach.
+- Scheduler design research, without implementation yet.
 
 ## Testing
 
-- `compile_commands.json` sync.
 - Runtime trap validation in QEMU:
   - Confirm expected M-mode `ecall` returns after advancing `mepc`.
   - Confirm an unexpected trap prints `mcause`, `mepc`, and `mtval`, then halts.
@@ -82,11 +80,17 @@ These are intentionally deferred until prerequisites are understood.
 - Runtime entry explicitly clears `.bss` before entering C.
 - If `kmain` returns, `entry.s` falls back to a known infinite loop.
 - Initial allocator memory range is separated from `.bss` in the linker script.
+- Machine timer interrupt foundation implemented for QEMU `virt` CLINT.
+- `mie.MTIE` and `mstatus.MIE` are enabled during timer initialization.
+- `timer_intr` handles machine timer interrupts and reprograms the next tick.
+- `timer_count` exposes the number of timer interrupts handled.
+- `compile_commands.json` refreshed with `bear -- make` and matches current C sources/Makefile flags.
+- README build/run/validate instructions updated to match `Makefile`, scripts, and Zed tasks.
 
 ## Board Notes
 
-- Keep stack placement as a follow-up; the current stack works but still lives in `.data`.
-- Timer interrupts are the next active research area now that basic runtime initialization is explicit.
+- Current active research follows the standard learning workflow: read resources, answer questions, discuss design, then implement.
+- Keep stack placement as the current follow-up; the current stack works but still lives in `.data`.
 - Keep this board in sync with the priority sections below.
 
 ---
@@ -205,33 +209,17 @@ Priority:
 
 ## README
 
-File:
+Status:
 
-- `README.md`
-
-Outdated details:
-
-- Build/run/validate instructions should match `Makefile`, scripts under `scripts/`, and `.zed/tasks.json`.
-- Debug instructions are deferred until debug scripts/tasks are reintroduced.
-
-Priority:
-
-- Low-medium.
+- Build/run/validate instructions match `Makefile`, scripts under `scripts/`, and `.zed/tasks.json`.
+- Debug instructions remain deferred until debug scripts/tasks are reintroduced.
 
 ## `compile_commands.json`
 
-Issue:
+Status:
 
-- Uses stale flags such as `-march=rv64i`.
-- May not match `Makefile`.
-
-Impact:
-
-- Editor diagnostics may differ from real build behavior.
-
-Priority:
-
-- Medium for development experience.
+- Refreshed with `bear -- make`.
+- Matches current C sources and `Makefile` flags.
 
 ---
 
@@ -264,19 +252,18 @@ Priority:
 
 # Recommended Order Before Continuing Deeply With Interrupts
 
-1. Research timer interrupt foundations:
-   - identify the QEMU `virt` timer source,
-   - identify the required machine-mode CSRs and bits,
-   - decide how the next tick is programmed.
-2. Add timer interrupt foundations:
-   - enable only the required machine-mode interrupt bits,
-   - program the QEMU `virt` timer source deliberately,
-   - handle timer interrupts without advancing `mepc`,
-   - keep diagnostics available for unexpected interrupt state.
-3. Revalidate trap behavior after timer work:
-   - expected `ecall` still returns correctly,
-   - unknown exceptions still halt,
-   - unhandled interrupts do not silently continue.
+1. Revisit initial stack placement and ownership:
+   - decide whether the boot stack should remain in `.data`, move to `.bss`, or use a dedicated stack section,
+   - document stack bounds and alignment expectations,
+   - keep the solution minimal for single-hart M-mode.
+2. UART readiness and register layout:
+   - define the NS16550A register offsets used by QEMU `virt`,
+   - decide whether writes should wait for transmitter readiness,
+   - keep console output simple and reliable.
+3. Scheduler design research only:
+   - understand what state a task needs,
+   - distinguish cooperative switching from timer-driven preemption,
+   - avoid implementation until stacks/context switching requirements are clear.
 
 Do not prioritize yet:
 
@@ -295,4 +282,4 @@ Trap handling foundations are complete enough for the current phase.
 
 The project does not need a major rewrite.
 
-The next technical work should focus on runtime initialization policy: explicit `.bss` clearing and defined `kmain` return behavior. After that, continue toward timer interrupts while keeping VM, scheduler, filesystem, userspace, and OpenSBI/S-mode work deferred.
+The next technical work should follow the standard learning workflow: research stack placement first, discuss the design, then implement only the minimal cleanup. UART readiness and scheduler design remain research topics; VM, filesystem, userspace, and OpenSBI/S-mode work stay deferred.

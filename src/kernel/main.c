@@ -1,19 +1,11 @@
-#include <kernel/printf.h>
 #include <kernel/kalloc.h>
 #include <kernel/trap.h>
+#include <kernel/timer.h>
+#include <kernel/printf.h>
 
-#include <drivers/uart.h>
-
-void kmain()
+void kmain(void)
 {
+	kalloc_init();
 	trap_init();
-
-	printf("before ecall\n");
-
-	__asm__ volatile(".word 0xffffffff");
-
-	printf("after ecall\n");
-
-	while (true) {
-	}
+	timer_init();
 }

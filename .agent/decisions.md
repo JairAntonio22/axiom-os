@@ -18,7 +18,32 @@ Implication:
 - Avoid writing implementation code unless explicitly requested.
 - Prefer explanations, tasks, review, and hints.
 
-## 2. Machine Mode for Now
+## 2. Learning Workflow
+
+Decision:
+
+- For each new topic, use a research-first workflow before implementation.
+
+Workflow:
+
+1. Suggest focused readings/resources.
+2. Give investigation questions.
+3. Let the user research and answer.
+4. Discuss the answers and design tradeoffs.
+5. Implement only after the design is understood.
+6. Review and validate the implementation.
+
+Rationale:
+
+- Axiom is primarily an OS learning project.
+- Research questions help the user build the mental model before writing code.
+- This avoids copy-paste implementation and keeps complexity intentional.
+
+Implication:
+
+- For stack placement, UART readiness, scheduler design, virtual memory, and other major topics, agents should lead with resources and questions unless the user explicitly asks for code.
+
+## 3. Machine Mode for Now
 
 Decision:
 
@@ -35,7 +60,7 @@ Future:
 - Supervisor mode/OpenSBI may be considered later after machine-mode fundamentals are understood.
 - Avoid introducing OpenSBI/S-mode prematurely.
 
-## 3. Assembly Usage
+## 4. Assembly Usage
 
 Decision:
 
@@ -54,7 +79,7 @@ Rationale:
 - The user can read assembly but is still learning to write it.
 - Most kernel logic should remain in C for clarity.
 
-## 4. No Major Directory Restructure Yet
+## 5. No Major Directory Restructure Yet
 
 Decision:
 
@@ -69,7 +94,7 @@ Future:
 
 - `src/rv64` may eventually become something like `src/arch/riscv64`, but not yet.
 
-## 5. Refine Foundations Before Advancing
+## 6. Refine Foundations Before Advancing
 
 Decision:
 
@@ -89,7 +114,7 @@ Current recommended order:
 
 Memory-management cleanup is now deferred until memory work resumes.
 
-## 6. Type Aliases
+## 7. Type Aliases
 
 Decision:
 
@@ -129,7 +154,7 @@ Future conceptual types may be more valuable than raw aliases:
 - virtual address type
 - page/frame types
 
-## 7. Type-Oriented C Style
+## 8. Type-Oriented C Style
 
 Decision:
 
@@ -152,7 +177,7 @@ Style:
 - At use sites, prefer `arena *a`, `trap_frame *tf`, or `trap_cause cause` instead of `struct arena *a` or `enum trap_cause cause`.
 - Let implementation details remain in declarations, not every use site.
 
-## 8. Header Implementation Policy
+## 9. Header Implementation Policy
 
 Decision:
 
@@ -173,7 +198,7 @@ Current application:
 - `include/rv64/csr.h` declares CSR helper functions.
 - `src/rv64/csr.c` implements those functions.
 
-## 9. Build/Run Separation
+## 10. Build/Run Separation
 
 Decision:
 
@@ -215,7 +240,7 @@ Layout note:
 - Reconsider moving the linker script when Axiom supports multiple architectures, platforms, or linker layouts.
 - At that point, prefer architecture/target-specific ownership, for example `arch/riscv64/kernel.ld`, `src/rv64/kernel.ld`, or a dedicated `linker/` layout if there are multiple scripts but not yet multiple architectures.
 
-## 10. Build Discipline and Failure UX
+## 11. Build Discipline and Failure UX
 
 Decision:
 
@@ -236,7 +261,7 @@ Implication:
 - Scripts should produce little or no output on success, but clear actionable output on failure.
 - Kernel/user-facing OS behavior should follow the same UX direction where practical: normal expected paths should be quiet; unexpected or dangerous states should report useful diagnostics loudly.
 
-## 11. Backlog Maintenance
+## 12. Backlog Maintenance
 
 Decision:
 

@@ -2,7 +2,7 @@
 
 #include <lib/base.h>
 
-volatile u8 *mmio_uart = (volatile u8 *)(0x10000000);
+static volatile u8 *mmio_uart = (volatile u8 *)(0x10000000);
 
 void uart_init(void)
 {

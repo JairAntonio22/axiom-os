@@ -53,21 +53,24 @@ Axiom is currently in very early development.
 
 Implemented so far:
 
-- RISC-V boot process
+- RISC-V RV64 bare-metal boot on QEMU `virt`
 - Basic kernel entry point
 - UART output
 - Custom linker script
-- Bare-metal execution under QEMU
+- Explicit `.bss` clearing before entering C
+- Trap handling with a minimal trap frame
+- Machine timer interrupts through QEMU `virt` CLINT
+- Basic arena-style allocator
 
 Planned:
 
+- Initial stack placement cleanup
+- UART readiness/register layout cleanup
 - Physical memory management
 - Virtual memory
-- Trap and interrupt handling
 - Cooperative multitasking
 - Filesystem
 - Userspace programs
-- Simple toolchain and development environment
 
 ---
 
@@ -83,7 +86,7 @@ Current target:
 The project intentionally avoids unnecessary dependencies and large frameworks.
 
 ---
-## Building
+## Building and Running
 
 Requirements:
 
@@ -99,7 +102,13 @@ make
 Run under QEMU:
 
 ```bash
-make run
+scripts/run.sh
+```
+
+Validate a clean build:
+
+```bash
+scripts/validate.sh
 ```
 
 Clean build artifacts:
@@ -107,6 +116,8 @@ Clean build artifacts:
 ```bash
 make clean
 ```
+
+Zed tasks are also provided for `run`, `build`, `validate`, and `clean`.
 
 ---
 
@@ -125,11 +136,17 @@ Target configuration:
 
 The kernel is linked statically without libc or external runtime support.
 
-Execution currently targets the QEMU `virt` machine:
+Execution currently targets the QEMU `virt` machine. The canonical run command lives in `scripts/run.sh` and currently executes QEMU with `bin/kernel.elf` as firmware:
 
 ```bash
-qemu-system-riscv64 -machine virt -bios bin/kernel
+qemu-system-riscv64 \
+    -display none \
+    -serial mon:stdio \
+    -M virt \
+    -bios bin/kernel.elf
 ```
+
+Debugger integration is intentionally deferred for now.
 
 ---
 

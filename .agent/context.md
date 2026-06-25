@@ -102,16 +102,18 @@ These were previously in the backlog and have been mostly addressed:
 - `trap_handler` distinguishes interrupts from exceptions, advances `mepc` only for handled M-mode `ecall`, and halts on unknown traps.
 - `entry.s` initializes the stack, clears `.bss` using `bss_start`/`bss_end`, calls `kmain`, and falls back to an infinite loop if `kmain` returns.
 - `scripts/kernel.ld` exposes `bss_start`, `bss_end`, `memory_begin`, and `memory_end`; the initial allocator memory range is outside `.bss`.
+- README build/run/validate instructions are updated to match `Makefile`, scripts, and Zed tasks.
+- `compile_commands.json` was refreshed with `bear -- make` and matches current C sources/Makefile flags.
+- Machine timer interrupts work through QEMU `virt` CLINT; `timer_intr` increments a tick counter and schedules the next tick.
+- `timer_count` exposes the number of timer interrupts handled.
 
 ## Current Known Risk Areas
 
 Important unresolved technical risks:
 
 - Runtime trap validation still relies on manual QEMU triggers rather than a formal test harness.
-- Interrupt handling is not implemented yet beyond classification and safe halt behavior.
 - Initial stack placement and ownership should be revisited; the current stack works but still lives in `.data`.
-- `compile_commands.json` may be stale and still use `rv64i`.
-- README build/run/validate instructions should match `Makefile`, `scripts/run.sh`, `scripts/validate.sh`, and Zed tasks. Debug instructions are deferred until the workflow is reintroduced.
+- Debug instructions remain deferred until debug scripts/tasks are reintroduced.
 
 Deferred memory-management issues:
 
@@ -136,7 +138,7 @@ When giving help, prefer:
 
 Next focus:
 
-1. Research timer interrupt foundations for QEMU `virt`.
-2. Identify the timer source, required machine-mode CSRs/bits, and reprogramming strategy.
-3. Implement a minimal machine timer interrupt only after the design is understood.
-4. Revisit initial stack placement later as a focused cleanup.
+1. Research initial stack placement and ownership.
+2. Discuss the stack design before implementing changes.
+3. Keep UART readiness and scheduler design as research topics.
+4. Continue using the standard workflow: resources/questions first, discussion second, implementation last.

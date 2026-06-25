@@ -8,10 +8,10 @@ The project is intentionally educational. Agents should recommend learning paths
 
 Near-term topics:
 
-1. RISC-V CSRs related to traps.
-2. RISC-V trap handling in machine mode.
-3. Calling convention and trap frame design.
-4. Minimal freestanding runtime responsibilities.
+1. Initial stack placement and ownership.
+2. UART readiness and NS16550A register layout.
+3. Scheduler design research, without implementation yet.
+4. Continue reinforcing RISC-V traps, interrupts, and calling convention as needed.
 
 Memory alignment and arena allocator basics were recently refined; deeper allocator hardening is deferred until memory management work resumes.
 
@@ -175,7 +175,11 @@ Questions for the user:
 
 ### Traps
 
-Before implementing more trap logic, the user should understand:
+Current status:
+
+- Basic trap reporting, minimal trap frame, controlled M-mode `ecall`, and machine timer interrupt handling are implemented for the current phase.
+
+Keep reinforcing:
 
 - What `mtvec` points to.
 - What `mcause` encodes.
@@ -184,12 +188,78 @@ Before implementing more trap logic, the user should understand:
 - When it is correct to advance `mepc`.
 - Why calling C from a trap can corrupt registers if context is not saved.
 
-Suggested trap exercise:
+### Initial Stack Placement
 
-- Trigger an `ecall`.
-- Read/report `mcause`, `mepc`, and `mtval`.
-- Advance `mepc` only for the expected `ecall` case.
-- Halt on unknown exceptions.
+Resources:
+
+- RISC-V psABI stack alignment requirements:
+  https://github.com/riscv-non-isa/riscv-elf-psabi-doc
+- Linker script references:
+  - GNU ld linker scripts documentation
+  - OSDev Wiki linker script overview: https://wiki.osdev.org/Linker_Scripts
+- Existing Axiom files:
+  - `src/rv64/entry.s`
+  - `scripts/kernel.ld`
+
+Questions for the user:
+
+1. Should the boot stack be considered initialized data, zeroed data, or its own special region?
+2. If the stack moves into `.bss`, does clearing `.bss` after setting `sp` create any real problem in the current entry path?
+3. Would a dedicated section such as `.stack` or `.bss.stack` make the linker script clearer?
+4. What symbols should the linker expose for the stack: `stack_bottom`, `stack_top`, `stack_size`?
+5. What alignment should `stack_top` guarantee before calling C?
+6. Should the initial stack be single-hart only for now, or should the design leave room for per-hart stacks later?
+7. Where should `memory_begin` start relative to the stack, `.bss`, and future heap/arena memory?
+8. What would count as success for this cleanup without overengineering?
+
+### UART Readiness and Register Layout
+
+Resources:
+
+- QEMU `virt` DTS UART node: `serial@10000000`, compatible `ns16550a`.
+- NS16550A / 16550 UART register references.
+- OSDev Wiki serial ports page for conceptual register overview, noting that many examples are x86-port-I/O oriented:
+  https://wiki.osdev.org/Serial_Ports
+- Existing Axiom files:
+  - `src/drivers/uart.c`
+  - `include/drivers/uart.h`
+
+Questions for the user:
+
+1. Which UART register offset is the transmit holding register?
+2. Which UART register offset is the line status register?
+3. Which bit indicates that the transmitter holding register is empty or ready?
+4. Should `uart_putc` busy-wait until ready before writing?
+5. What should happen if UART never becomes ready: spin forever, timeout, or assume QEMU works?
+6. Should Axiom define named constants for UART base, register offsets, and bits?
+7. Should UART remain a minimal polling driver for now, or should interrupt-driven UART be deferred?
+8. How much UART reliability is needed before scheduler/timer debugging becomes noisy?
+
+### Scheduler Design Research
+
+Do not implement yet. The goal is to build the mental model before writing context-switching code.
+
+Resources:
+
+- OSTEP process and scheduling chapters:
+  https://pages.cs.wisc.edu/~remzi/OSTEP/
+- xv6-riscv book sections on scheduling/context switching, with caution that xv6 runs in S-mode and uses a different full design:
+  https://pdos.csail.mit.edu/6.828/2023/xv6/book-riscv-rev3.pdf
+- RISC-V psABI register convention.
+- Existing Axiom trap frame and timer interrupt code.
+
+Questions for the user:
+
+1. What is the smallest useful definition of a task/thread in Axiom?
+2. What state must be saved to pause one kernel thread and resume another?
+3. How is a scheduler context switch different from returning from a trap using `trap_frame`?
+4. Should the first scheduler be cooperative, timer-preemptive, or a staged path from cooperative to preemptive?
+5. Does each task need its own kernel stack from the beginning?
+6. Where would task stacks come from: static arrays, arena allocator, or a future page allocator?
+7. What does the timer interrupt need to do before preemption is safe?
+8. What invariants must hold while switching stacks?
+9. What should happen if a timer interrupt arrives while already inside kernel code?
+10. What success criteria prove the first scheduler milestone without adding userspace, VM, or filesystems?
 
 ## Mentoring Reminder
 
