@@ -31,8 +31,6 @@ This board is intentionally high-level. Keep it updated when tasks move between 
 
 ## In Progress
 
-- Revisit initial stack placement and ownership.
-
 ## Todo
 
 - UART readiness and register layout.
@@ -86,11 +84,15 @@ These are intentionally deferred until prerequisites are understood.
 - `timer_count` exposes the number of timer interrupts handled.
 - `compile_commands.json` refreshed with `bear -- make` and matches current C sources/Makefile flags.
 - README build/run/validate instructions updated to match `Makefile`, scripts, and Zed tasks.
+- Initial stack placement and ownership resolved for the current single-hart M-mode phase.
+- Boot stack is defined by a dedicated linker `.stack` section with `stack_bottom` and 16-byte-aligned `stack_top`.
+- `.stack` is placed after `.bss` and before allocator `memory_begin`, keeping early heap memory separate from stack storage.
+- Linker `PHDRS` split kernel load segments into executable text, read-only data, and writable data/stack regions to avoid accidental `RWE` segments.
 
 ## Board Notes
 
 - Current active research follows the standard learning workflow: read resources, answer questions, discuss design, then implement.
-- Keep stack placement as the current follow-up; the current stack works but still lives in `.data`.
+- Stack placement is closed for the current phase; revisit only when adding per-hart stacks, task stacks, or privilege-mode changes.
 - Keep this board in sync with the priority sections below.
 
 ---
@@ -165,19 +167,18 @@ Files:
 - `src/rv64/entry.s`
 - `scripts/kernel.ld`
 
-Status: completed for the current foundation, with stack placement left as a follow-up.
+Status: completed for the current foundation.
 
 Current state:
 
 - `entry.s` sets the initial stack before entering C.
 - `entry.s` clears `.bss` byte-by-byte using `bss_start` and `bss_end` from the linker script.
 - `entry.s` calls `kmain`, so a return from `kmain` reaches the fallback loop.
-- `scripts/kernel.ld` exposes `bss_start`, `bss_end`, `memory_begin`, and `memory_end`.
-- `memory_begin` and `memory_end` are outside `.bss`.
-
-Remaining follow-up:
-
-- Revisit initial stack placement and ownership. The current stack is defined in `.data`; a future cleanup may move it to a clearer stack-specific area once the desired memory layout is better understood.
+- `scripts/kernel.ld` exposes `bss_start`, `bss_end`, `stack_bottom`, `stack_top`, `memory_begin`, and `memory_end`.
+- The boot stack lives in a dedicated `.stack` section, not `.data` or `.bss`.
+- `stack_top` is 16-byte aligned before entering C.
+- `.stack` is placed after `.bss` and before `memory_begin`, so allocator memory starts after the boot stack.
+- `PHDRS` keeps text, read-only data, and writable data/stack in separate load segments with `RX`, `R`, and `RW` permissions.
 
 ---
 
@@ -252,15 +253,11 @@ Priority:
 
 # Recommended Order Before Continuing Deeply With Interrupts
 
-1. Revisit initial stack placement and ownership:
-   - decide whether the boot stack should remain in `.data`, move to `.bss`, or use a dedicated stack section,
-   - document stack bounds and alignment expectations,
-   - keep the solution minimal for single-hart M-mode.
-2. UART readiness and register layout:
+1. UART readiness and register layout:
    - define the NS16550A register offsets used by QEMU `virt`,
    - decide whether writes should wait for transmitter readiness,
    - keep console output simple and reliable.
-3. Scheduler design research only:
+2. Scheduler design research only:
    - understand what state a task needs,
    - distinguish cooperative switching from timer-driven preemption,
    - avoid implementation until stacks/context switching requirements are clear.
@@ -282,4 +279,4 @@ Trap handling foundations are complete enough for the current phase.
 
 The project does not need a major rewrite.
 
-The next technical work should follow the standard learning workflow: research stack placement first, discuss the design, then implement only the minimal cleanup. UART readiness and scheduler design remain research topics; VM, filesystem, userspace, and OpenSBI/S-mode work stay deferred.
+The stack placement cleanup is complete for the current single-hart M-mode phase. The next technical work should follow the standard learning workflow for UART readiness/register layout, then scheduler design research. VM, filesystem, userspace, and OpenSBI/S-mode work stay deferred.

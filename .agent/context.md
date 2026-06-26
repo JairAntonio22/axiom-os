@@ -74,6 +74,8 @@ Known implemented pieces:
 - Controlled M-mode `ecall` return path.
 - Explicit `.bss` clearing in `entry.s` before entering C.
 - Known fallback loop if `kmain` returns.
+- Dedicated linker-owned boot stack section with `stack_bottom` and 16-byte-aligned `stack_top`.
+- Linker `PHDRS` split kernel `LOAD` segments into `RX`, `R`, and `RW` regions.
 
 ## Recently Addressed Items
 
@@ -106,13 +108,14 @@ These were previously in the backlog and have been mostly addressed:
 - `compile_commands.json` was refreshed with `bear -- make` and matches current C sources/Makefile flags.
 - Machine timer interrupts work through QEMU `virt` CLINT; `timer_intr` increments a tick counter and schedules the next tick.
 - `timer_count` exposes the number of timer interrupts handled.
+- Initial stack placement is resolved for the current phase: `entry.s` loads `sp` from linker-provided `stack_top`; `.stack` lives after `.bss` and before allocator `memory_begin`; `PHDRS` avoid accidental `RWE` load segments.
 
 ## Current Known Risk Areas
 
 Important unresolved technical risks:
 
 - Runtime trap validation still relies on manual QEMU triggers rather than a formal test harness.
-- Initial stack placement and ownership should be revisited; the current stack works but still lives in `.data`.
+- Stack placement should be revisited only when adding per-hart stacks, task stacks, or changing privilege/runtime model.
 - Debug instructions remain deferred until debug scripts/tasks are reintroduced.
 
 Deferred memory-management issues:
@@ -138,7 +141,7 @@ When giving help, prefer:
 
 Next focus:
 
-1. Research initial stack placement and ownership.
-2. Discuss the stack design before implementing changes.
-3. Keep UART readiness and scheduler design as research topics.
+1. Research UART readiness and NS16550A register layout.
+2. Discuss the UART design before implementing changes.
+3. Keep scheduler design as a research topic after UART.
 4. Continue using the standard workflow: resources/questions first, discussion second, implementation last.

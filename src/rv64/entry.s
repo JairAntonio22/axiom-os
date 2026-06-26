@@ -19,9 +19,3 @@ bss_init_end:
 
 loop:
 	j loop
-
-.section .data
-.space 1024 * 8
-.align 16
-
-stack_top:

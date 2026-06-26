@@ -8,10 +8,9 @@ The project is intentionally educational. Agents should recommend learning paths
 
 Near-term topics:
 
-1. Initial stack placement and ownership.
-2. UART readiness and NS16550A register layout.
-3. Scheduler design research, without implementation yet.
-4. Continue reinforcing RISC-V traps, interrupts, and calling convention as needed.
+1. UART readiness and NS16550A register layout.
+2. Scheduler design research, without implementation yet.
+3. Continue reinforcing RISC-V traps, interrupts, calling convention, and linker layout as needed.
 
 Memory alignment and arena allocator basics were recently refined; deeper allocator hardening is deferred until memory management work resumes.
 
@@ -190,7 +189,17 @@ Keep reinforcing:
 
 ### Initial Stack Placement
 
-Resources:
+Current status:
+
+- Completed for the current single-hart M-mode foundation.
+- The boot stack is owned by the linker layout through a dedicated `.stack` output section.
+- `scripts/kernel.ld` exposes `stack_bottom` and `stack_top`; `stack_top` is 16-byte aligned before entering C.
+- `.stack` is placed after `.bss` and before `memory_begin`, keeping allocator memory after the boot stack.
+- `entry.s` only initializes `sp` from `stack_top`; it does not reserve stack bytes itself.
+- Linker `PHDRS` keep `RX`, `R`, and `RW` load segments separate to avoid accidental `RWE`.
+- Revisit this topic when adding per-hart stacks, task stacks, preemption, or privilege-mode changes.
+
+Reference resources:
 
 - RISC-V psABI stack alignment requirements:
   https://github.com/riscv-non-isa/riscv-elf-psabi-doc
@@ -201,16 +210,16 @@ Resources:
   - `src/rv64/entry.s`
   - `scripts/kernel.ld`
 
-Questions for the user:
+Resolved answers:
 
-1. Should the boot stack be considered initialized data, zeroed data, or its own special region?
-2. If the stack moves into `.bss`, does clearing `.bss` after setting `sp` create any real problem in the current entry path?
-3. Would a dedicated section such as `.stack` or `.bss.stack` make the linker script clearer?
-4. What symbols should the linker expose for the stack: `stack_bottom`, `stack_top`, `stack_size`?
-5. What alignment should `stack_top` guarantee before calling C?
-6. Should the initial stack be single-hart only for now, or should the design leave room for per-hart stacks later?
-7. Where should `memory_begin` start relative to the stack, `.bss`, and future heap/arena memory?
-8. What would count as success for this cleanup without overengineering?
+1. The boot stack is its own special linker-owned region, represented by `.stack`.
+2. The current entry path does not clear `.stack`; only `.bss` is explicitly zeroed.
+3. A dedicated `.stack` section is clearer than hiding stack storage in `.data` or `.bss`.
+4. The linker exposes `stack_bottom` and `stack_top`; a separate `stack_size` symbol is not needed yet.
+5. `stack_top` is 16-byte aligned before calling C.
+6. The current design is intentionally single-hart for now; per-hart stacks are future work.
+7. `memory_begin` starts after `.stack`, so the allocator does not overlap boot stack storage.
+8. Success for this phase means a clean build, no accidental `RWE` load segment, and a minimal linker/entry design that is easy to revisit later.
 
 ### UART Readiness and Register Layout
 

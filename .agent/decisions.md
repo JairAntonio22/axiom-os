@@ -41,7 +41,7 @@ Rationale:
 
 Implication:
 
-- For stack placement, UART readiness, scheduler design, virtual memory, and other major topics, agents should lead with resources and questions unless the user explicitly asks for code.
+- For UART readiness, scheduler design, virtual memory, and other major topics, agents should lead with resources and questions unless the user explicitly asks for code. Stack placement is settled for the current phase and should only be reopened for per-hart/task-stack or runtime model changes.
 
 ## 3. Machine Mode for Now
 
@@ -276,3 +276,27 @@ When a user says they addressed items:
 Example:
 
 - `printf` edge cases like `INT_MIN` may exist, but were not retained in the backlog because the original debug-tool issues were addressed and the backlog should not become noise.
+
+
+## 13. Initial Stack Placement
+
+Decision:
+
+- Use a dedicated linker-owned `.stack` output section for the initial boot stack.
+- Expose `stack_bottom` and `stack_top` from `scripts/kernel.ld`.
+- Keep `stack_top` 16-byte aligned before entering C.
+- Place `.stack` after `.bss` and before allocator `memory_begin`.
+- Keep the current boot stack single-hart and machine-mode only.
+- Keep `entry.s` minimal: initialize `sp` from `stack_top`, set `s0`, clear `.bss`, and call `kmain`.
+- Use linker `PHDRS` to keep executable text, read-only data, and writable data/stack in separate `LOAD` segments, avoiding accidental `RWE` permissions.
+
+Rationale:
+
+- The stack is runtime scratch space, not initialized `.data`.
+- A dedicated `.stack` section makes ownership and bounds explicit without introducing per-hart/task-stack complexity too early.
+- Placing `memory_begin` after `.stack` prevents the early allocator from overlapping stack storage.
+- Explicit program headers make the ELF layout deterministic instead of relying on accidental padding or orphan-section placement.
+
+Future:
+
+- Revisit when adding multiple harts, scheduler/task stacks, guard pages, virtual memory, or an S-mode/OpenSBI runtime model.

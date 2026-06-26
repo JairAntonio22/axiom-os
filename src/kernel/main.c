@@ -8,4 +8,5 @@ void kmain(void)
 	kalloc_init();
 	trap_init();
 	timer_init();
+	printf("running");
 }

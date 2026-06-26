@@ -1,22 +1,47 @@
+PHDRS {
+  text PT_LOAD FLAGS(5);
+  rodata PT_LOAD FLAGS(4);
+  data PT_LOAD FLAGS(6);
+}
+
 SECTIONS {
   . = 0x80000000;
-  .text : {
+
+  .text : ALIGN(4K) {
     KEEP(*(.text._start));
-    *(.text*);
-  }
-  .rodata : {
+    *(.text*)
+  } :text
+
+  .rodata : ALIGN(4K) {
     *(.rodata*)
-  }
-  .data : {
-    *(.data*)
-  }
-  .bss : {
+  } :rodata
+
+  .data : ALIGN(4K) {
+    *(.sdata)
+    *(.sdata.*)
+    *(.data)
+    *(.data.*)
+  } :data
+
+  .bss : ALIGN(4K) {
     bss_start = .;
-    *(.bss*)
+    *(.sbss)
+    *(.sbss.*)
+    *(.bss)
+    *(.bss.*)
+    *(COMMON)
     bss_end = .;
-  }
-  . = ALIGN(16);
+  } :data
+
+  .stack (NOLOAD) : ALIGN(16) {
+    stack_bottom = .;
+    . += 16K;
+    . = ALIGN(16);
+    stack_top = .;
+  } :data
+
+  . = ALIGN(4K);
   memory_begin = .;
-  . += 4K;
+  . += 256K;
   memory_end = .;
 }
