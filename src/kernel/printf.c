@@ -12,13 +12,13 @@ static void print_hex(u64 n)
 	u64 offset = 60;
 
 	for (int i = 0; i < 16; i++) {
-		u8 byte = (n & (0xfULL << offset)) >> offset;
+		u8 nibble = (n & (0xfULL << offset)) >> offset;
 
-		if (byte < 10) {
-			uart_putc(byte + '0');
+		if (nibble < 10) {
+			uart_putc(nibble + '0');
 
 		} else {
-			uart_putc((byte - 10) + 'a');
+			uart_putc((nibble - 10) + 'a');
 		}
 
 		offset -= 4;
