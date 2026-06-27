@@ -12,6 +12,9 @@
 *.map
 *.exp
 
+# Generated hardware descriptions
+*.dtb
+
 # Precompiled Headers
 *.gch
 *.pch
@@ -36,8 +39,13 @@
 *.x86_64
 *.hex
 
-# Binary directory
+# Build outputs
 bin
+build
+.cache
+
+# Editor files
+.zed
 
 # Debug files
 *.dSYM/
