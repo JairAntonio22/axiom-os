@@ -41,7 +41,7 @@ Rationale:
 
 Implication:
 
-- For UART readiness, scheduler design, virtual memory, and other major topics, agents should lead with resources and questions unless the user explicitly asks for code. Stack placement is settled for the current phase and should only be reopened for per-hart/task-stack or runtime model changes.
+- For scheduler design, virtual memory, and other major topics, agents should lead with resources and questions unless the user explicitly asks for code. Stack placement and UART polling are settled for the current phase and should only be reopened for later runtime/model changes.
 
 ## 3. Machine Mode for Now
 
@@ -300,3 +300,26 @@ Rationale:
 Future:
 
 - Revisit when adding multiple harts, scheduler/task stacks, guard pages, virtual memory, or an S-mode/OpenSBI runtime model.
+
+
+## 14. UART Polling Driver
+
+Decision:
+
+- Keep UART as a minimal polling NS16550A-compatible driver for the current QEMU `virt` target.
+- Treat the UART MMIO region at `0x10000000` as byte-addressed registers.
+- Access registers through `volatile u8 *` so indexed offsets advance one byte at a time.
+- Do not use `volatile uptr *` for UART registers; that changes the pointer indexing stride on RV64.
+- `uart_putc` waits for `LSR.THRE` before writing to `THR`.
+- `uart_getc` waits for `LSR.DR` before reading from `RBR`.
+- `uart_init` clears `LCR.DLAB` and is called before kernel output.
+
+Rationale:
+
+- The current kernel needs simple, reliable polling I/O for diagnostics and learning.
+- Blocking UART calls are acceptable at this stage and match the rest of the early boot/runtime simplicity.
+- Keeping register width and address representation separate avoids MMIO stride bugs.
+
+Future:
+
+- Revisit for non-blocking receive, interrupt-driven UART, ring buffers, terminal line discipline, error status handling, or platform/device-tree-driven register stride.

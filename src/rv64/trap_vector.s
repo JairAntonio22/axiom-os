@@ -6,8 +6,8 @@
 trap_vector:
 	addi sp, sp, -0x110	# allocate trap frame
 
-	# Save original context.
-	# x0 is not saved because it is hardwired to zero.
+	# Save original context
+	# x0 is not saved because it is hardwired to zero
 	sd ra,  0x00(sp)
 	sd t0,  0x20(sp)	# save t0 before using it as scratch
 	addi t0, sp, 0x110	# t0 = original sp
@@ -48,11 +48,11 @@ trap_vector:
 	csrr t0, mtval
 	sd t0,  0x108(sp)
 
-	# Trap handler function call.
+	# Trap handler function call
 	mv a0, sp
 	call trap_handler
 
-	# Apply CSR changes made by the trap handler.
+	# Apply CSR changes made by the trap handler
 	ld t0,  0x100(sp)
 	csrw mepc, t0
 
@@ -88,7 +88,7 @@ trap_vector:
 	ld t5,  0xe8(sp)
 	ld t6,  0xf0(sp)
 
-	# Free trap frame. This restores the interrupted sp.
+	# Free trap frame, this restores the interrupted sp
 	addi sp, sp, 0x110
 
 	mret

@@ -64,7 +64,7 @@ Known implemented pieces:
 - RISC-V boot entry.
 - Stack setup.
 - Kernel entry point.
-- UART output.
+- UART polling input/output.
 - Minimal `printf`.
 - Basic memory helpers.
 - Basic arena-style allocator.
@@ -76,6 +76,7 @@ Known implemented pieces:
 - Known fallback loop if `kmain` returns.
 - Dedicated linker-owned boot stack section with `stack_bottom` and 16-byte-aligned `stack_top`.
 - Linker `PHDRS` split kernel `LOAD` segments into `RX`, `R`, and `RW` regions.
+- UART uses explicit QEMU `virt`/NS16550A byte offsets and waits on `LSR.THRE`/`LSR.DR` for blocking output/input.
 
 ## Recently Addressed Items
 
@@ -109,6 +110,7 @@ These were previously in the backlog and have been mostly addressed:
 - Machine timer interrupts work through QEMU `virt` CLINT; `timer_intr` increments a tick counter and schedules the next tick.
 - `timer_count` exposes the number of timer interrupts handled.
 - Initial stack placement is resolved for the current phase: `entry.s` loads `sp` from linker-provided `stack_top`; `.stack` lives after `.bss` and before allocator `memory_begin`; `PHDRS` avoid accidental `RWE` load segments.
+- UART readiness/register layout is resolved for the current phase: `uart_putc` blocks until transmit-ready, `uart_getc` blocks until data-ready, and register access remains `volatile u8 *` to preserve byte stride.
 
 ## Current Known Risk Areas
 
@@ -141,7 +143,7 @@ When giving help, prefer:
 
 Next focus:
 
-1. Research UART readiness and NS16550A register layout.
-2. Discuss the UART design before implementing changes.
-3. Keep scheduler design as a research topic after UART.
+1. Research scheduler design without implementing it yet.
+2. Focus on task state, stacks, context switching boundaries, and timer-driven preemption concepts.
+3. Keep virtual memory, filesystem, userspace, and OpenSBI/S-mode deferred.
 4. Continue using the standard workflow: resources/questions first, discussion second, implementation last.

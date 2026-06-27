@@ -8,9 +8,8 @@ The project is intentionally educational. Agents should recommend learning paths
 
 Near-term topics:
 
-1. UART readiness and NS16550A register layout.
-2. Scheduler design research, without implementation yet.
-3. Continue reinforcing RISC-V traps, interrupts, calling convention, and linker layout as needed.
+1. Scheduler design research, without implementation yet.
+2. Continue reinforcing RISC-V traps, interrupts, calling convention, linker layout, and MMIO basics as needed.
 
 Memory alignment and arena allocator basics were recently refined; deeper allocator hardening is deferred until memory management work resumes.
 
@@ -223,7 +222,17 @@ Resolved answers:
 
 ### UART Readiness and Register Layout
 
-Resources:
+Current status:
+
+- Completed for the current polling foundation.
+- QEMU `virt` UART is treated as NS16550A-compatible byte-addressed MMIO at `0x10000000`.
+- Register access uses `volatile u8 *` so array indexing advances one byte per register offset.
+- `RBR`/`THR`, `LCR`, and `LSR` offsets are explicitly named.
+- `uart_putc` waits for `LSR.THRE` before writing.
+- `uart_getc` waits for `LSR.DR` before reading.
+- Interrupt-driven UART, buffering, line discipline, and error handling are deferred.
+
+Reference resources:
 
 - QEMU `virt` DTS UART node: `serial@10000000`, compatible `ns16550a`.
 - NS16550A / 16550 UART register references.
@@ -233,16 +242,16 @@ Resources:
   - `src/drivers/uart.c`
   - `include/drivers/uart.h`
 
-Questions for the user:
+Resolved answers:
 
-1. Which UART register offset is the transmit holding register?
-2. Which UART register offset is the line status register?
-3. Which bit indicates that the transmitter holding register is empty or ready?
-4. Should `uart_putc` busy-wait until ready before writing?
-5. What should happen if UART never becomes ready: spin forever, timeout, or assume QEMU works?
-6. Should Axiom define named constants for UART base, register offsets, and bits?
-7. Should UART remain a minimal polling driver for now, or should interrupt-driven UART be deferred?
-8. How much UART reliability is needed before scheduler/timer debugging becomes noisy?
+1. `THR` and `RBR` use offset `0`.
+2. `LSR` uses offset `5` for QEMU `virt` byte-addressed NS16550A MMIO.
+3. `LSR.THRE` is bit 5; `LSR.DR` is bit 0.
+4. `uart_putc` busy-waits until transmit-ready for the current phase.
+5. If the UART never becomes ready, the current polling driver intentionally spins; timeout/error recovery is deferred.
+6. Axiom defines named constants for register offsets and status bits.
+7. UART remains a minimal polling driver for now; interrupt-driven UART is deferred.
+8. This is reliable enough for current scheduler/timer debugging output.
 
 ### Scheduler Design Research
 

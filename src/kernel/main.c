@@ -1,3 +1,4 @@
+#include <drivers/uart.h>
 #include <kernel/kalloc.h>
 #include <kernel/trap.h>
 #include <kernel/timer.h>
@@ -5,8 +6,8 @@
 
 void kmain(void)
 {
+	uart_init();
 	kalloc_init();
 	trap_init();
 	timer_init();
-	printf("running");
 }

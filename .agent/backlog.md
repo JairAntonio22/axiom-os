@@ -33,9 +33,8 @@ This board is intentionally high-level. Keep it updated when tasks move between 
 
 ## Todo
 
-- UART readiness and register layout.
-- Revisit Zed debugger integration for QEMU remote GDB attach.
 - Scheduler design research, without implementation yet.
+- Revisit Zed debugger integration for QEMU remote GDB attach.
 
 ## Testing
 
@@ -88,11 +87,15 @@ These are intentionally deferred until prerequisites are understood.
 - Boot stack is defined by a dedicated linker `.stack` section with `stack_bottom` and 16-byte-aligned `stack_top`.
 - `.stack` is placed after `.bss` and before allocator `memory_begin`, keeping early heap memory separate from stack storage.
 - Linker `PHDRS` split kernel load segments into executable text, read-only data, and writable data/stack regions to avoid accidental `RWE` segments.
+- UART readiness and register layout resolved for the current polling driver.
+- UART uses QEMU `virt`/NS16550A byte offsets for `RBR`/`THR`, `LCR`, and `LSR`.
+- `uart_putc` waits for `LSR.THRE` before writing and `uart_getc` waits for `LSR.DR` before reading.
 
 ## Board Notes
 
 - Current active research follows the standard learning workflow: read resources, answer questions, discuss design, then implement.
 - Stack placement is closed for the current phase; revisit only when adding per-hart stacks, task stacks, or privilege-mode changes.
+- UART polling is closed for the current phase; revisit for interrupt-driven input/output, buffering, or terminal handling.
 - Keep this board in sync with the priority sections below.
 
 ---
@@ -189,20 +192,19 @@ Files:
 - `src/drivers/uart.c`
 - `include/drivers/uart.h`
 
+Status: completed for the current polling foundation.
+
 Current state:
 
-- UART writes directly to MMIO base address.
-- This works for basic QEMU output.
+- `uart_init` clears `LCR.DLAB` and is called before kernel output.
+- UART register offsets are explicit for QEMU `virt`/NS16550A byte-addressed MMIO.
+- `uart_putc` busy-waits on `LSR.THRE` before writing to `THR`.
+- `uart_getc` busy-waits on `LSR.DR` before reading from `RBR`.
+- MMIO access uses `volatile u8 *`; address-sized integer types are not used as the register pointer because that would change the indexing stride.
 
-Potential improvements:
+Future follow-up:
 
-- Wait for transmitter readiness before writing.
-- Clarify UART register layout.
-
-Priority:
-
-- Low for now.
-- Useful later if output becomes unreliable.
+- Revisit UART later for non-blocking receive, interrupt-driven I/O, buffering, terminal line discipline, or error status handling.
 
 ---
 
@@ -253,11 +255,7 @@ Priority:
 
 # Recommended Order Before Continuing Deeply With Interrupts
 
-1. UART readiness and register layout:
-   - define the NS16550A register offsets used by QEMU `virt`,
-   - decide whether writes should wait for transmitter readiness,
-   - keep console output simple and reliable.
-2. Scheduler design research only:
+1. Scheduler design research only:
    - understand what state a task needs,
    - distinguish cooperative switching from timer-driven preemption,
    - avoid implementation until stacks/context switching requirements are clear.
@@ -279,4 +277,4 @@ Trap handling foundations are complete enough for the current phase.
 
 The project does not need a major rewrite.
 
-The stack placement cleanup is complete for the current single-hart M-mode phase. The next technical work should follow the standard learning workflow for UART readiness/register layout, then scheduler design research. VM, filesystem, userspace, and OpenSBI/S-mode work stay deferred.
+The stack placement and UART polling cleanups are complete for the current single-hart M-mode phase. The next technical work should follow the standard learning workflow for scheduler design research. VM, filesystem, userspace, and OpenSBI/S-mode work stay deferred.
