@@ -1,4 +1,3 @@
-#include "lib/base.h"
 #include <drivers/uart.h>
 
 #include <kernel/kalloc.h>
