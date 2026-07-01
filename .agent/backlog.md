@@ -31,9 +31,10 @@ This board is intentionally high-level. Keep it updated when tasks move between 
 
 ## In Progress
 
+- Cooperative scheduler milestone: C task/context model is being wired to an RV64 assembly `context_switch`.
+
 ## Todo
 
-- Scheduler design research, without implementation yet.
 - Revisit Zed debugger integration for QEMU remote GDB attach.
 
 ## Testing
@@ -48,7 +49,7 @@ This board is intentionally high-level. Keep it updated when tasks move between 
 These are intentionally deferred until prerequisites are understood.
 
 - Virtual memory.
-- Scheduler.
+- Preemptive scheduler.
 - Filesystem.
 - Userspace.
 - S-mode/OpenSBI migration.
@@ -255,15 +256,23 @@ Priority:
 
 # Recommended Order Before Continuing Deeply With Interrupts
 
-1. Scheduler design research only:
-   - understand what state a task needs,
-   - distinguish cooperative switching from timer-driven preemption,
-   - avoid implementation until stacks/context switching requirements are clear.
+1. Finish the cooperative scheduler milestone:
+   - implement RV64 `context_switch`,
+   - validate two kernel tasks alternating through explicit `sched_yield`,
+   - keep the milestone cooperative only.
+
+Future scheduler follow-ups:
+
+- Define what happens when a task entry function returns; current test tasks are expected not to return.
+- Add explicit handling for `kmalloc` or `sched_add` failure once the milestone moves past the first controlled demo.
+- Revisit task stack ownership when adding task destruction, reuse, or a page/frame allocator.
+- Revisit `context_switch(NULL, next)` if a separate boot/scheduler context becomes preferable.
+- Revisit scheduler state and locking rules before any timer-driven preemption.
 
 Do not prioritize yet:
 
 - virtual memory,
-- scheduler,
+- preemptive scheduler,
 - filesystem,
 - userspace,
 - OpenSBI/S-mode migration,
@@ -277,4 +286,4 @@ Trap handling foundations are complete enough for the current phase.
 
 The project does not need a major rewrite.
 
-The stack placement and UART polling cleanups are complete for the current single-hart M-mode phase. The next technical work should follow the standard learning workflow for scheduler design research. VM, filesystem, userspace, and OpenSBI/S-mode work stay deferred.
+The stack placement and UART polling cleanups are complete for the current single-hart M-mode phase. The current scheduler work should stay scoped to a cooperative kernel-task milestone with explicit yields. VM, filesystem, userspace, preemptive scheduling, and OpenSBI/S-mode work stay deferred.
