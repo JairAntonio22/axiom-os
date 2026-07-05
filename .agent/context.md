@@ -20,6 +20,7 @@ The user's goal is to learn operating system development. This is their first OS
 - Assembly usage: boot entry and trap vector only unless needed.
 - Runtime: freestanding, no libc, no external runtime support.
 - Build preference: clean, strict, and quiet; warnings should be treated as issues to understand and fix.
+- Toolchain prefix is explicit: `Makefile` requires `CROSS_COMPILE` for build/link steps. Current Linux workflow uses `riscv64-unknown-elf-`.
 - Build/run separation: `Makefile` owns compilation/linking/cleaning; scripts under `scripts/` own validation and QEMU execution.
 - Integer style: Rust-style aliases from `include/lib/base.h` (`u8`, `u64`, `usize`, `uptr`, etc.) are used in project code.
 - Struct style: use lightweight typedef names, e.g. `arena *a` instead of `struct arena *a`.
@@ -98,14 +99,14 @@ These were previously in the backlog and have been mostly addressed:
 - QEMU execution moved out of `Makefile` into `scripts/run.sh`.
 - Validation helper added as `scripts/validate.sh`.
 - Runtime scripts are canonical under `scripts/`; no root-level wrappers are kept.
-- Zed tasks include `run`, `build`, `validate`, and `clean`.
+- Editor task configuration such as `.zed/` is local developer configuration and is not tracked by the project.
 - Debugger setup was attempted and deferred; there is currently no `.zed/debug.json`, no debug task, and no debug helper script.
 - Trap vector now saves/restores general-purpose register context before calling C.
 - `trap_frame` captures `mcause`, `mepc`, and `mtval` and is passed to `trap_handler`.
 - `trap_handler` distinguishes interrupts from exceptions, advances `mepc` only for handled M-mode `ecall`, and halts on unknown traps.
 - `entry.s` initializes the stack, clears `.bss` using `bss_start`/`bss_end`, calls `kmain`, and falls back to an infinite loop if `kmain` returns.
 - `scripts/kernel.ld` exposes `bss_start`, `bss_end`, `memory_begin`, and `memory_end`; the initial allocator memory range is outside `.bss`.
-- README build/run/validate instructions are updated to match `Makefile`, scripts, and Zed tasks.
+- README build/run/validate instructions are updated to match `Makefile`, scripts, explicit `CROSS_COMPILE`, and the Linux workflow.
 - `compile_commands.json` was refreshed with `bear -- make` and matches current C sources/Makefile flags.
 - Machine timer interrupts work through QEMU `virt` CLINT; `timer_intr` increments a tick counter and schedules the next tick.
 - `timer_count` exposes the number of timer interrupts handled.

@@ -97,25 +97,35 @@ The project intentionally avoids unnecessary dependencies and large frameworks.
 
 Requirements:
 
-- RISC-V GNU toolchain
+- RISC-V GNU bare-metal toolchain
 - QEMU for RISC-V
+
+The toolchain prefix is intentionally explicit. On Linux, Axiom expects a bare-metal RISC-V toolchain using the `riscv64-unknown-elf-` prefix.
 
 Build the kernel:
 
 ```bash
-make
+make CROSS_COMPILE=riscv64-unknown-elf-
 ```
 
 Run under QEMU:
 
 ```bash
-scripts/run.sh
+CROSS_COMPILE=riscv64-unknown-elf- scripts/run.sh
 ```
 
 Validate a clean build:
 
 ```bash
+CROSS_COMPILE=riscv64-unknown-elf- scripts/validate.sh
+```
+
+You can also export the variable once per shell session:
+
+```bash
+export CROSS_COMPILE=riscv64-unknown-elf-
 scripts/validate.sh
+scripts/run.sh
 ```
 
 Clean build artifacts:
@@ -124,17 +134,21 @@ Clean build artifacts:
 make clean
 ```
 
-The repository does not track editor-local task files. If you use Zed or another editor, keep those files local unless the project intentionally adopts shared editor configuration.
+`make clean` does not require `CROSS_COMPILE`.
+
+Editor task files are intentionally not tracked. If you use Zed or another editor, keep those tasks as local developer configuration.
 
 ---
 
 ## Toolchain
 
-Axiom currently uses a minimal bare-metal RISC-V toolchain setup:
+Axiom uses a minimal bare-metal RISC-V GNU toolchain. On Linux, the expected prefix is `riscv64-unknown-elf-`.
 
-- `riscv64-elf-as`
-- `riscv64-elf-gcc`
-- `riscv64-elf-ld`
+With `CROSS_COMPILE=riscv64-unknown-elf-`, the build uses:
+
+- `riscv64-unknown-elf-as`
+- `riscv64-unknown-elf-gcc`
+- `riscv64-unknown-elf-ld`
 
 Target configuration:
 
@@ -173,7 +187,7 @@ Generated/local artifacts are intentionally ignored, including:
 `compile_commands.json` can be useful for LSP/editor integration, but it is generated locally and may contain machine-specific paths. Regenerate it when needed, for example with:
 
 ```bash
-bear -- make
+bear -- make CROSS_COMPILE=riscv64-unknown-elf-
 ```
 
 The human-readable QEMU `virt` device tree snapshot may be kept as documentation under `docs/`, but the binary `.dtb` form is treated as generated output.

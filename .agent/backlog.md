@@ -83,7 +83,7 @@ These are intentionally deferred until prerequisites are understood.
 - `timer_intr` handles machine timer interrupts and reprograms the next tick.
 - `timer_count` exposes the number of timer interrupts handled.
 - `compile_commands.json` refreshed with `bear -- make` and matches current C sources/Makefile flags.
-- README build/run/validate instructions updated to match `Makefile`, scripts, and Zed tasks.
+- README build/run/validate instructions updated to match `Makefile`, scripts, explicit `CROSS_COMPILE`, and the Linux `riscv64-unknown-elf-` workflow.
 - Initial stack placement and ownership resolved for the current single-hart M-mode phase.
 - Boot stack is defined by a dedicated linker `.stack` section with `stack_bottom` and 16-byte-aligned `stack_top`.
 - `.stack` is placed after `.bss` and before allocator `memory_begin`, keeping early heap memory separate from stack storage.
@@ -215,7 +215,7 @@ Future follow-up:
 
 Status:
 
-- Build/run/validate instructions match `Makefile`, scripts under `scripts/`, and `.zed/tasks.json`.
+- README build/run/validate instructions match `Makefile`, explicit `CROSS_COMPILE`, and scripts under `scripts/`. Editor task files remain local developer configuration.
 - Debug instructions remain deferred until debug scripts/tasks are reintroduced.
 
 ## `compile_commands.json`

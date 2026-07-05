@@ -9,7 +9,7 @@ The project is intentionally educational. Agents should recommend learning paths
 Near-term topics:
 
 1. Scheduler design research, without implementation yet.
-2. Continue reinforcing RISC-V traps, interrupts, calling convention, linker layout, and MMIO basics as needed.
+2. Continue reinforcing RISC-V traps, interrupts, calling convention, linker layout, Linux toolchain configuration, and MMIO basics as needed.
 
 Memory alignment and arena allocator basics were recently refined; deeper allocator hardening is deferred until memory management work resumes.
 

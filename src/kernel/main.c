@@ -34,13 +34,13 @@ void kmain(void)
 	usize stack_size = KB(16);
 	task tasks[2];
 
-	uptr sp1 = (uptr)kmalloc(stack_size) + stack_size;
+	uptr sp1 = (uptr)kmalloc_aln(stack_size, 0x10) + stack_size;
 
 	tasks[0] = (task){ .stack_size = stack_size,
 			   .ctx.ra = (uptr)task1,
 			   .ctx.sp = sp1 };
 
-	uptr sp2 = (uptr)kmalloc(stack_size) + stack_size;
+	uptr sp2 = (uptr)kmalloc_aln(stack_size, 0x10) + stack_size;
 
 	tasks[1] = (task){ .stack_size = stack_size,
 			   .ctx.ra = (uptr)task2,

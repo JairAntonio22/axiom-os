@@ -1,4 +1,3 @@
-#include "rv64/context.h"
 #include <lib/status.h>
 #include <kernel/sched.h>
 
@@ -38,6 +37,7 @@ void sched_start(void)
 
 	next->state = RUNNING;
 	curr = next->id;
+
 	context_switch(NULL, &next->ctx);
 }
 

@@ -18,7 +18,7 @@ void *kmalloc(usize num_bytes)
 	return arena_alloc(&kalloc, num_bytes);
 }
 
-void *kzalloc(usize num_bytes)
+void *kmalloc_aln(usize num_bytes, u64 align)
 {
-	return arena_zalloc(&kalloc, num_bytes);
+	return arena_alloc_align(&kalloc, num_bytes, align);
 }

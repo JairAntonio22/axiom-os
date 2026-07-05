@@ -11,9 +11,15 @@ clean:
 
 # Toolchain
 
-AS=riscv64-elf-as
-CC=riscv64-elf-gcc
-LD=riscv64-elf-ld
+ifeq ($(filter clean,$(MAKECMDGOALS)),)
+ifndef CROSS_COMPILE
+$(error CROSS_COMPILE is not set. Example: make CROSS_COMPILE=riscv64-unknown-elf-)
+endif
+endif
+
+AS=$(CROSS_COMPILE)as
+CC=$(CROSS_COMPILE)gcc
+LD=$(CROSS_COMPILE)ld
 
 # Architecture and ABI
 

@@ -218,14 +218,19 @@ Current scripts:
 
 Both scripts intentionally use `set -eu` so failures stop immediately and unset variables are treated as errors. `validate.sh` should remain silent on success but print a clear error on failure.
 
+Toolchain configuration:
+
+- `Makefile` requires `CROSS_COMPILE` for build/link steps instead of choosing a default toolchain prefix.
+- This keeps the Linux toolchain prefix explicit; the current documented workflow uses `riscv64-unknown-elf-`.
+- `make clean` intentionally does not require `CROSS_COMPILE`.
+
 No root-level wrappers are kept for these scripts; commands should call the scripts under `scripts/` directly.
 
-Zed tasks:
+Editor tasks:
 
-- `run`: executes `scripts/run.sh`.
-- `build`: executes `make`.
-- `validate`: executes `scripts/validate.sh` and uses `hide: "on_success"` so failures remain visible.
-- `clean`: executes `make clean`.
+- Zed/editor task configuration is considered personal developer configuration.
+- `.zed/` is ignored and should not be used as shared project configuration for now.
+- Developers can create local tasks that set `CROSS_COMPILE=riscv64-unknown-elf-` if desired.
 
 Debugger note:
 

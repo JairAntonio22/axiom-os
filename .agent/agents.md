@@ -108,7 +108,7 @@ The build should be clean, strict, and quiet:
 - Do not rely on noisy builds as normal workflow.
 - Keep Makefile output quiet unless there is an error or intentional runtime output.
 - Apply silent success, loud failure to scripts and OS UX: successful expected paths should be quiet; failures should be clear and actionable.
-- A full build validation should use `scripts/validate.sh`, whose current behavior is `make clean`, `make`, and verifying `bin/kernel.elf` exists and is non-empty.
+- A full build validation should use `scripts/validate.sh`, whose current behavior is `make clean`, `make`, and verifying `bin/kernel.elf` exists and is non-empty. Because the toolchain prefix is explicit, run it with `CROSS_COMPILE` set, e.g. `CROSS_COMPILE=riscv64-unknown-elf- scripts/validate.sh` on Linux.
 
 Examples:
 
