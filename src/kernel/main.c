@@ -10,18 +10,19 @@
 
 void task1(void)
 {
-	while (1) {
-		printf("Hello from task 1\n");
-		sched_yield();
-	}
+	printf("Hello from task 1\n");
+	sched_yield();
+	printf("Goodbye from task 1\n");
 }
 
 void task2(void)
 {
-	while (1) {
+	for (int i = 0; i < 10; i++) {
 		printf("Hello from task 2\n");
 		sched_yield();
 	}
+
+	printf("Goodbye from task 2\n");
 }
 
 void kmain(void)
@@ -31,23 +32,8 @@ void kmain(void)
 	trap_init();
 	timer_init();
 
-	usize stack_size = KB(16);
-	task tasks[2];
-
-	uptr sp1 = (uptr)kmalloc_aln(stack_size, 0x10) + stack_size;
-
-	tasks[0] = (task){ .stack_size = stack_size,
-			   .ctx.ra = (uptr)task1,
-			   .ctx.sp = sp1 };
-
-	uptr sp2 = (uptr)kmalloc_aln(stack_size, 0x10) + stack_size;
-
-	tasks[1] = (task){ .stack_size = stack_size,
-			   .ctx.ra = (uptr)task2,
-			   .ctx.sp = sp2 };
-
-	sched_add(tasks[0]);
-	sched_add(tasks[1]);
+	sched_spawn(task1, KB(16));
+	sched_spawn(task2, KB(16));
 
 	sched_start();
 }

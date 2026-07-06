@@ -1,10 +1,13 @@
 #include <lib/status.h>
+
+#include <kernel/printf.h>
 #include <kernel/sched.h>
+#include <kernel/kalloc.h>
 
 #define MAX_TASKS 0x10
 
 static task tasks[MAX_TASKS];
-static u64 curr = MAX_TASKS - 1;
+static isize curr = -1;
 
 extern void context_switch(context *prev, context *next);
 
@@ -12,8 +15,8 @@ static task *sched_select(void)
 {
 	assert(MAX_TASKS && (MAX_TASKS & (MAX_TASKS - 1)) == 0);
 
-	u64 limit = 0;
-	u64 next = curr;
+	usize limit = 0;
+	isize next = curr;
 
 	do {
 		next = (next + 1) & (MAX_TASKS - 1);
@@ -41,7 +44,7 @@ void sched_start(void)
 	context_switch(NULL, &next->ctx);
 }
 
-status_code sched_add(task t)
+static status_code sched_add(task t)
 {
 	u64 tid = 0;
 
@@ -65,7 +68,35 @@ status_code sched_add(task t)
 	return OK;
 }
 
-void sched_switch(void)
+static void sched_switch(void);
+
+static void sched_trampoline(void)
+{
+	if (tasks[curr].state == RUNNING) {
+		tasks[curr].entry();
+		sched_exit();
+	}
+
+	panic("no more tasks to do\n");
+}
+
+status_code sched_spawn(task_entry entry, usize stack_size)
+{
+	uptr stack_base = (uptr)kmalloc_aln(stack_size, 0x10);
+
+	if (!stack_base) {
+		return ENOMEM;
+	}
+
+	task task = { .entry = entry,
+		      .stack_size = stack_size,
+		      .ctx.ra = (uptr)sched_trampoline,
+		      .ctx.sp = stack_base + stack_size };
+
+	return sched_add(task);
+}
+
+static void sched_switch(void)
 {
 	task *prev = &tasks[curr];
 	task *next = sched_select();
@@ -74,7 +105,6 @@ void sched_switch(void)
 		return;
 	}
 
-	prev->state = RUNNABLE;
 	next->state = RUNNING;
 	curr = next->id;
 
@@ -83,5 +113,12 @@ void sched_switch(void)
 
 void sched_yield(void)
 {
+	tasks[curr].state = RUNNABLE;
+	sched_switch();
+}
+
+void sched_exit(void)
+{
+	tasks[curr].state = DONE;
 	sched_switch();
 }
