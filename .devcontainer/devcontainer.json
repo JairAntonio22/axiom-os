@@ -16,7 +16,11 @@
         }
     },
     "postCreateCommand": "make clean || true && bear -- make || true",
-    "containerEnv": {
-        "CROSS_COMPILE": "riscv64-unknown-elf-"
+    "mounts": [
+        "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,readonly",
+        "source=${localEnv:SSH_AUTH_SOCK},target=/ssh-agent,type=bind"
+    ],
+    "remoteEnv": {
+        "SSH_AUTH_SOCK": "/ssh-agent"
     }
 }

@@ -3,13 +3,16 @@ FROM debian:stable-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         make \
+        ca-certificates \
+        openssh-client \
         git \
         qemu-system-misc \
         gcc-riscv64-unknown-elf \
         binutils-riscv64-unknown-elf \
         gdb-multiarch \
         clangd \
-        bear
+        bear \
+        && rm -rf /var/lib/apt/lists/*
 
 RUN echo 'PS1="axiom:\w\$ "' >> /root/.bashrc
 
