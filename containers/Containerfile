@@ -1,0 +1,18 @@
+FROM debian:stable-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        make \
+        git \
+        qemu-system-misc \
+        gcc-riscv64-unknown-elf \
+        binutils-riscv64-unknown-elf \
+        gdb-multiarch \
+        clangd \
+        bear
+
+RUN echo 'PS1="axiom:\w\$ "' >> /root/.bashrc
+
+WORKDIR /workspace
+
+CMD ["/bin/bash"]

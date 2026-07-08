@@ -1,0 +1,22 @@
+{
+    "name": "Axiom OS",
+    "build": {
+        "dockerfile": "../containers/Containerfile",
+        "context": ".."
+    },
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "remoteUser": "root",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "llvm-vs-code-extensions.vscode-clangd",
+                "ms-vscode.cpptools"
+            ]
+        }
+    },
+    "postCreateCommand": "make clean || true && bear -- make || true",
+    "containerEnv": {
+        "CROSS_COMPILE": "riscv64-unknown-elf-"
+    }
+}

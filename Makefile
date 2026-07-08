@@ -10,13 +10,7 @@ clean:
 	rm -f a.out
 
 # Toolchain
-
-ifeq ($(filter clean,$(MAKECMDGOALS)),)
-ifndef CROSS_COMPILE
-$(error CROSS_COMPILE is not set. Example: make CROSS_COMPILE=riscv64-unknown-elf-)
-endif
-endif
-
+CROSS_COMPILE?=riscv64-unknown-elf-
 AS=$(CROSS_COMPILE)as
 CC=$(CROSS_COMPILE)gcc
 LD=$(CROSS_COMPILE)ld
