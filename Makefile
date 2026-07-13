@@ -1,8 +1,17 @@
 .SILENT:
 
-.PHONY: all clean
+.PHONY: all build run validate clean
 
-all: bin/kernel.elf
+all: build
+
+run: build
+	qemu-system-riscv64 \
+		-display none \
+		-serial mon:stdio \
+		-M virt \
+		-bios bin/kernel.elf
+
+build: bin/kernel.elf
 
 clean:
 	rm -fr bin
